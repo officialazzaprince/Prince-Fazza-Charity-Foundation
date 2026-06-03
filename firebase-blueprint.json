@@ -1,0 +1,190 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "An authorized administrator for the Cipher panel",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Administrator email address"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin"],
+          "description": "Operational security role"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Whether the admin is active"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Registration audit timestamp"
+        }
+      },
+      "required": ["userId", "email", "role", "active", "createdAt"]
+    },
+    "Donation": {
+      "title": "Donation",
+      "description": "Individual logged charitable donation record",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Pledger full name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Pledger email address"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Pledger contact number"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Pledged contribution amount in USD"
+        },
+        "prayerRequest": {
+          "type": "string",
+          "description": "Optional custom general prayer request text"
+        },
+        "prayerForCharity": {
+          "type": "string",
+          "description": "Optional customized prayers for charity"
+        },
+        "selectedPaymentMethod": {
+          "type": "string",
+          "description": "Selected checkout pathway (e.g., bank, crypto)"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Audit logging timestamp"
+        }
+      },
+      "required": ["fullName", "email", "phoneNumber", "amount", "selectedPaymentMethod", "timestamp"]
+    },
+    "DonationTicket": {
+      "title": "DonationTicket",
+      "description": "Automated security ticket for direct bank or wallet transfers",
+      "type": "object",
+      "properties": {
+        "ticketId": {
+          "type": "string",
+          "description": "Unique ticket identification string"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Pledger full name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Pledger email address"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Pledger contact number"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Pledged contribution amount in USD"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment route (bank, crypto)"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Audit logging timestamp"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Approved", "Declined"],
+          "description": "Verification state"
+        }
+      },
+      "required": ["ticketId", "fullName", "email", "phoneNumber", "amount", "paymentMethod", "timestamp", "status"]
+    },
+    "NewsletterSubscriber": {
+      "title": "NewsletterSubscriber",
+      "description": "Subscriber to the newsletter list",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Subscriber's email address"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Joining timestamp"
+        }
+      },
+      "required": ["email", "timestamp"]
+    },
+    "Volunteer": {
+      "title": "Volunteer",
+      "description": "Individual volunteer application",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "description": "Applicant full name"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Applicant email address"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "Applicant contact details"
+        },
+        "submittedInfo": {
+          "type": "string",
+          "description": "Applicant answers and questionnaire data"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Application submission timestamp"
+        }
+      },
+      "required": ["fullName", "email", "phoneNumber", "submittedInfo", "timestamp"]
+    }
+  },
+  "firestore": {
+    "admins": {
+      "schema": "Admin",
+      "description": "Administrators collection"
+    },
+    "donations": {
+      "schema": "Donation",
+      "description": "Donations logged in real-time"
+    },
+    "donationTickets": {
+      "schema": "DonationTicket",
+      "description": "Assigned transaction tickets for offline clearing"
+    },
+    "newsletterSubscribers": {
+      "schema": "NewsletterSubscriber",
+      "description": "Newsletter subscribers emails"
+    },
+    "volunteers": {
+      "schema": "Volunteer",
+      "description": "Volunteer application entries"
+    }
+  }
+}

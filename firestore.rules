@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() {
+      return request.resource.data;
+    }
+    
+    function existing() {
+      return resource.data;
+    }
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin' &&
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true) ||
+        (exists(/databases/$(database)/documents/admins/$(request.auth.token.email)) &&
+         get(/databases/$(database)/documents/admins/$(request.auth.token.email)).data.role == 'admin' &&
+         get(/databases/$(database)/documents/admins/$(request.auth.token.email)).data.active == true) ||
+        (request.auth.token.email == 'contact.cga.usa@gmail.com')
+      );
+    }
+
+    // Entity validation functions
+    function isValidDonation(data) {
+      return data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 500 &&
+             data.email is string && data.email.size() >= 1 && data.email.size() <= 500 &&
+             data.phoneNumber is string && data.phoneNumber.size() <= 200 &&
+             data.amount is number && data.amount > 0 &&
+             data.selectedPaymentMethod is string && data.selectedPaymentMethod.size() <= 200 &&
+             data.timestamp is string;
+    }
+
+    function isValidDonationTicket(data) {
+      return data.ticketId is string && data.ticketId.size() <= 200 &&
+             data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 500 &&
+             data.email is string && data.email.size() >= 1 && data.email.size() <= 500 &&
+             data.phoneNumber is string && data.phoneNumber.size() <= 200 &&
+             data.amount is number && data.amount > 0 &&
+             data.paymentMethod is string && data.paymentMethod.size() <= 200 &&
+             data.timestamp is string &&
+             data.status is string && (data.status == 'Pending' || data.status == 'Approved' || data.status == 'Declined');
+    }
+
+    function isValidNewsletterSubscriber(data) {
+      return data.email is string && data.email.size() >= 1 && data.email.size() <= 550 &&
+             data.timestamp is string;
+    }
+
+    function isValidVolunteer(data) {
+      return data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 500 &&
+             data.email is string && data.email.size() >= 1 && data.email.size() <= 500 &&
+             data.phoneNumber is string && data.phoneNumber.size() <= 200 &&
+             data.submittedInfo is string && data.submittedInfo.size() <= 10000 &&
+             data.timestamp is string;
+    }
+
+    // Rules matching collections
+    match /admins/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /donations/{donationId} {
+      allow create: if isValidDonation(incoming());
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /donationTickets/{ticketId} {
+      allow create: if isValidDonationTicket(incoming());
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /newsletterSubscribers/{subscriberId} {
+      allow create: if isValidNewsletterSubscriber(incoming());
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /volunteers/{volunteerId} {
+      allow create: if isValidVolunteer(incoming());
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

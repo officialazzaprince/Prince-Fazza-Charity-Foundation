@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ActivePage, Program, Comment, BlogItem } from "./types";
 import { Navbar } from "./components/Navbar";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "./firebase";
+import CipherAdminPanel from "./components/CipherAdminPanel";
 import { ServicePages } from "./components/ServicePages";
 import { GlobalVoices } from "./components/GlobalVoices";
 import { GlobalVoicesAddCommentary } from "./components/GlobalVoicesAddCommentary";
@@ -1215,6 +1218,20 @@ export default function App() {
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isDonationPressed, setIsDonationPressed] = useState(false);
+  const [isCipherOpen, setIsCipherOpen] = useState(false);
+  const [volunteerEmail, setVolunteerEmail] = useState("");
+  const [volunteerPhone, setVolunteerPhone] = useState("");
+
+  useEffect(() => {
+    if (paymentSuccess || showPaymentPopup) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [paymentSuccess, showPaymentPopup]);
 
   const [recentDonors, setRecentDonors] = useState([
     { name: "Michael J. Anderson", amount: 12000, time: "2 min ago", project: "Medical Units" },
@@ -1271,9 +1288,44 @@ ${finalLine}`;
     return encodeURIComponent(text);
   };
 
-  const handlePaymentOptionSelect = (method: "bank" | "crypto") => {
+  const handlePaymentOptionSelect = async (method: "bank" | "crypto") => {
     const url = `https://wa.me/12272664466?text=${constructWhatsAppMessage(method)}`;
     
+    // Save donation submission to Firestore donations collection
+    try {
+      const dbPath = "donations";
+      await addDoc(collection(db, dbPath), {
+        fullName: payerName,
+        email: payerEmail,
+        phoneNumber: `${selectedCountryObj.code} ${payerPhone.trim()}`,
+        amount: Number(donateAmount) || 1000,
+        prayerRequest: payerWishes.trim() || "",
+        prayerForCharity: payerPrayer.trim() || "",
+        selectedPaymentMethod: method,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Firestore Donation log error:", error);
+    }
+
+    // Automatically generate a Donation Ticket in pending state
+    try {
+      const ticketId = `TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+      const dbPathTickets = "donationTickets";
+      await addDoc(collection(db, dbPathTickets), {
+        ticketId,
+        fullName: payerName,
+        email: payerEmail,
+        phoneNumber: `${selectedCountryObj.code} ${payerPhone.trim()}`,
+        amount: Number(donateAmount) || 1000,
+        paymentMethod: method,
+        timestamp: new Date().toISOString(),
+        status: "Pending"
+      });
+    } catch (error) {
+      console.error("Firestore Ticket generation error:", error);
+    }
+
     // Update live localized feed
     const newAddition = {
       name: payerName,
@@ -1436,8 +1488,9 @@ ${finalLine}`;
 
   return (
     <div className={`min-h-screen font-sans text-[#111111] ${isDonationFocusMode ? 'bg-slate-50' : 'bg-white'}`}>
-      
-      {/* Universal back button for Focus Mode */}
+      {!paymentSuccess && (
+        <>
+          {/* Universal back button for Focus Mode */}
       {isDonationFocusMode && (
         <button 
           onClick={() => setDonationStep(1)} 
@@ -4420,85 +4473,7 @@ ${finalLine}`;
           </div>
         </div>
 
-        {/* PREMIUM WHATSAPP OPTIONS MODAL ROW */}
-        <AnimatePresence>
-          {showPaymentPopup && (
-            <div 
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[9999] flex items-center justify-center p-4 font-sans transition-all duration-300"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                className="relative w-full max-w-lg bg-white/90 backdrop-blur-xl rounded-[32px] overflow-hidden border border-white/80 shadow-[0_30px_100px_rgba(0,0,0,0.12)] p-10 text-center space-y-8"
-              >
-                {/* Close button */}
-                <button
-                  type="button"
-                  onClick={() => setShowPaymentPopup(false)}
-                  className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100/80 text-slate-400 hover:text-slate-700 transition duration-200 cursor-pointer"
-                >
-                  <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
 
-                <div className="space-y-3.5">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm mb-2 animate-pulse">
-                    <Shield className="w-7 h-7" />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none">Choose a Payment Method</h3>
-                  <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-                    You have chosen to donate <span className="font-black text-emerald-600">${Number(donateAmount).toLocaleString()}</span>. Kindly select a payment method below to request payment details.
-                  </p>
-                </div>
-
-                {/* Options List */}
-                <div className="space-y-4 pt-2">
-                  
-                  {/* Bank Wire Option */}
-                  <button
-                    type="button"
-                    onClick={() => handlePaymentOptionSelect("bank")}
-                    className="group w-full p-5.5 rounded-[24px] border border-slate-200/90 hover:border-amber-500 bg-white hover:bg-amber-50/5 flex items-center space-x-4.5 text-left transition duration-300 shadow-sm hover:shadow-md cursor-pointer"
-                  >
-                    <div className="w-13 h-13 rounded-2xl bg-amber-50/80 text-amber-600 border border-amber-100/50 group-hover:bg-amber-600 group-hover:text-white group-hover:border-transparent flex items-center justify-center transition-all duration-300 shadow-[0_4px_12px_rgba(217,119,6,0.08)] group-hover:shadow-[0_4px_20px_rgba(217,119,6,0.25)]">
-                      <Landmark className="w-6.5 h-6.5 filter drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.08)] group-hover:drop-shadow-none transition duration-300" strokeWidth={1.75} />
-                    </div>
-                    <div className="flex-grow">
-                      <strong className="block text-sm font-black text-slate-900 tracking-tight transition duration-200 group-hover:text-amber-700">Request Bank Account</strong>
-                      <span className="block text-xs text-slate-500 font-normal mt-0.5 leading-normal">Request official bank transfer details for your donation.</span>
-                    </div>
-                    <span className="text-slate-350 group-hover:text-amber-500 transition transform group-hover:translate-x-1 font-bold">➔</span>
-                  </button>
-
-                  {/* Crypto Option */}
-                  <button
-                    type="button"
-                    onClick={() => handlePaymentOptionSelect("crypto")}
-                    className="group w-full p-5.5 rounded-[24px] border border-slate-200/90 hover:border-emerald-500 bg-white hover:bg-emerald-50/5 flex items-center space-x-4.5 text-left transition duration-300 shadow-sm hover:shadow-md cursor-pointer"
-                  >
-                    <div className="w-13 h-13 rounded-2xl bg-emerald-50/80 text-emerald-600 border border-emerald-100/50 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-transparent flex items-center justify-center transition-all duration-300 shadow-[0_4px_12px_rgba(16,185,129,0.08)] group-hover:shadow-[0_4px_20px_rgba(16,185,129,0.25)]">
-                      <Coins className="w-6.5 h-6.5 filter drop-shadow-[0_1.5px_2.5px_rgba(0,0,0,0.08)] group-hover:drop-shadow-none transition duration-300" strokeWidth={1.75} />
-                    </div>
-                    <div className="flex-grow">
-                      <strong className="block text-sm font-black text-slate-900 tracking-tight transition duration-200 group-hover:text-emerald-700">Request Wallet Address</strong>
-                      <span className="block text-xs text-slate-500 font-normal mt-0.5 leading-normal">Request the official cryptocurrency wallet details for your donation.</span>
-                    </div>
-                    <span className="text-slate-300 group-hover:text-emerald-500 transition transform group-hover:translate-x-1 font-bold">➔</span>
-                  </button>
-
-                </div>
-
-                {/* Footnote information */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-center space-x-2 text-[10px] text-slate-400 font-bold uppercase font-mono tracking-wider">
-                  <Lock className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Secure Direct Allocation Routing</span>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
 
       </div>
     )}
@@ -4747,7 +4722,25 @@ ${finalLine}`;
                   <p className="text-xs text-slate-400 mt-1">Our HR Logistics crew will connect over your coordinates inside 7 business days.</p>
                 </div>
               ) : (
-                <form onSubmit={(e) => { e.preventDefault(); setVolunteerRegistered(true); }} className="space-y-4 text-xs font-sans">
+                <form 
+                  onSubmit={async (e) => { 
+                    e.preventDefault(); 
+                    try {
+                      const dbPath = "volunteers";
+                      await addDoc(collection(db, dbPath), {
+                        fullName: volunteerName,
+                        email: volunteerEmail,
+                        phoneNumber: volunteerPhone,
+                        submittedInfo: `Skill Cluster: ${volunteerSkill}, Committed Schedule: ${volunteerHours}`,
+                        timestamp: new Date().toISOString()
+                      });
+                    } catch (error) {
+                      console.error("Firestore Volunteer error:", error);
+                    }
+                    setVolunteerRegistered(true); 
+                  }} 
+                  className="space-y-4 text-xs font-sans"
+                >
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-slate-500 block mb-1 font-bold">Full Identity Name</label>
@@ -4761,6 +4754,16 @@ ${finalLine}`;
                         <option>Language Translator</option>
                         <option>Social Teacher Representative</option>
                       </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-slate-500 block mb-1 font-bold">Email Address</label>
+                      <input type="email" required value={volunteerEmail} onChange={(e) => setVolunteerEmail(e.target.value)} className="w-full bg-white border border-[#EAEAEA] focus:border-[#F4511E] text-[#111111] font-bold rounded-xl py-2.5 px-4 outline-none transition placeholder-slate-400" placeholder="noura@charity.com" />
+                    </div>
+                    <div>
+                      <label className="text-slate-500 block mb-1 font-bold">Phone Number</label>
+                      <input type="text" required value={volunteerPhone} onChange={(e) => setVolunteerPhone(e.target.value)} className="w-full bg-white border border-[#EAEAEA] focus:border-[#F4511E] text-[#111111] font-bold rounded-xl py-2.5 px-4 outline-none transition placeholder-slate-400" placeholder="+971 50 123 4567" />
                     </div>
                   </div>
                   <div>
@@ -5128,7 +5131,12 @@ ${finalLine}`;
               <button onClick={() => handlePageChange("annual-reports")} className="text-left hover:text-[#F4511E] transition-colors cursor-pointer">Annual Financial Audit</button>
               <button onClick={() => handlePageChange("financial-transparency")} className="text-left hover:text-[#F4511E] transition-colors cursor-pointer">Zero fee leaks schema</button>
               <button onClick={() => handlePageChange("privacy")} className="text-left hover:text-[#F4511E] transition-colors cursor-pointer">Privacy and Cookie Terms</button>
-              <span className="text-[10px] text-zinc-500 font-mono font-bold">Charity Registration ID: 41-4112NY01</span>
+              <span 
+                onClick={() => setIsCipherOpen(true)}
+                className="text-[10px] text-zinc-500 font-mono font-bold cursor-pointer hover:text-[#F4511E] transition duration-200 select-none"
+              >
+                Charity Registration ID: 41-4112NY01
+              </span>
             </div>
           </div>
 
@@ -5138,7 +5146,22 @@ ${finalLine}`;
             {newsSigned ? (
               <p className="text-emerald-500 font-extrabold">Mailbox registered.</p>
             ) : (
-              <form onSubmit={(e) => { e.preventDefault(); setNewsSigned(true); }} className="flex">
+              <form 
+                onSubmit={async (e) => { 
+                  e.preventDefault(); 
+                  try {
+                    const dbPath = "newsletterSubscribers";
+                    await addDoc(collection(db, dbPath), {
+                      email: newsletterEmail,
+                      timestamp: new Date().toISOString()
+                    });
+                  } catch (error) {
+                    console.error("Firestore Newsletter subscribe error:", error);
+                  }
+                  setNewsSigned(true); 
+                }} 
+                className="flex"
+              >
                 <input 
                   type="email" 
                   value={newsletterEmail}
@@ -5161,6 +5184,8 @@ ${finalLine}`;
           </div>
         </div>
       </footer>
+      )}
+        </>
       )}
 
       {/* PREMIUM IMAGE PREVIEW / LIGHTBOX SYSTEM */}
@@ -5224,6 +5249,156 @@ ${finalLine}`;
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* GLOBAL ULTRA PREMIUM THANK-YOU MODAL OVERLAY */}
+      <AnimatePresence>
+        {paymentSuccess && (
+          <div className="fixed inset-0 z-[100000] bg-slate-950/85 backdrop-blur-xl flex items-center justify-center p-4 overflow-hidden select-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-md bg-white rounded-3xl border border-slate-100 shadow-[0_30px_100px_rgba(0,0,0,0.4)] p-8 text-center space-y-6 mx-auto"
+            >
+              <div className="relative w-16 h-16 mx-auto">
+                <div className="absolute inset-0 bg-emerald-500/10 rounded-full animate-ping"></div>
+                <div className="bg-emerald-500 text-white w-16 h-16 rounded-full flex items-center justify-center relative shadow-md">
+                  <CheckCircle className="w-8 h-8" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-sans font-black text-xl text-slate-900 tracking-tight leading-tight">
+                  Blessings & Thank You, {payerName || "Kind Benefactor"}
+                </h3>
+                
+                <div className="py-1">
+                  <span className="text-4xl font-black text-emerald-600 font-mono block">
+                    ${Number(donateAmount || 1000).toLocaleString()}
+                  </span>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest font-mono mt-0.5">
+                    USD
+                  </p>
+                </div>
+
+                <p className="text-sm text-slate-600 font-medium leading-relaxed font-sans px-2">
+                  was logged successfully under the official donation protocol.
+                </p>
+                
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed font-sans italic border-t border-slate-100 pt-4 px-2">
+                  May Almighty God richly bless you, strengthen you, and reward you for your kindness, compassion, and support towards humanity.
+                </p>
+              </div>
+
+              {/* Action buttons kept from requirement 4 */}
+              <div className="space-y-2 flex flex-col pt-2 border-t border-slate-105">
+                <button 
+                  onClick={() => {
+                    setPaymentSuccess(false);
+                    setDonationStep(1);
+                    setActivePage("home");
+                  }} 
+                  className="w-full bg-[#111111] hover:bg-[#F4511E] text-white py-3.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 shadow-md cursor-pointer text-center"
+                >
+                  Return to Home Overview
+                </button>
+                <button 
+                  onClick={() => {
+                    setPaymentSuccess(false);
+                    setDonationStep(1);
+                  }} 
+                  className="w-full bg-transparent hover:bg-slate-50 text-slate-700 border border-slate-200 py-3.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer text-center"
+                >
+                  Pledge Another Donation
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* GLOBAL ULTRA PREMIUM PAYMENT METHOD SELECTOR MODAL OVERLAY */}
+      <AnimatePresence>
+        {showPaymentPopup && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[99999] flex items-center justify-center p-4 font-sans select-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative w-full max-w-lg bg-white rounded-3xl border border-slate-100 shadow-[0_35px_120px_rgba(0,0,0,0.3)] p-8 text-center space-y-6 mx-auto"
+            >
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => setShowPaymentPopup(false)}
+                className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100/80 text-slate-400 hover:text-slate-700 transition duration-200 cursor-pointer"
+              >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="space-y-2.5">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm mb-1 animate-pulse">
+                  <Shield className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none">Choose a Payment Method</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  You have chosen to donate <span className="font-extrabold text-emerald-600">${Number(donateAmount || 1000).toLocaleString()}</span>. Kindly select a payment method below to request payment details.
+                </p>
+              </div>
+
+              {/* Options List */}
+              <div className="space-y-3 pt-1">
+                
+                {/* Bank Wire Option */}
+                <button
+                  type="button"
+                  onClick={() => handlePaymentOptionSelect("bank")}
+                  className="group w-full p-4.5 rounded-[20px] border border-slate-150 hover:border-amber-500 bg-white hover:bg-amber-50/5 flex items-center space-x-4 text-left transition duration-300 shadow-sm hover:shadow-md cursor-pointer"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-amber-50/85 text-amber-600 border border-amber-100/50 group-hover:bg-amber-600 group-hover:text-white group-hover:border-transparent flex items-center justify-center transition-all duration-300 shadow-sm">
+                    <Landmark className="w-5.5 h-5.5 transition duration-300" strokeWidth={1.75} />
+                  </div>
+                  <div className="flex-grow">
+                    <strong className="block text-xs font-black text-slate-900 tracking-tight transition duration-200 group-hover:text-amber-700">Request Bank Account</strong>
+                    <span className="block text-[10px] text-slate-400 font-normal leading-normal mt-0.5 animate-pulse">Request official bank transfer details for your donation.</span>
+                  </div>
+                  <span className="text-slate-300 group-hover:text-amber-500 transition transform group-hover:translate-x-1 font-bold text-xs font-mono">➔</span>
+                </button>
+
+                {/* Crypto Option */}
+                <button
+                  type="button"
+                  onClick={() => handlePaymentOptionSelect("crypto")}
+                  className="group w-full p-4.5 rounded-[20px] border border-slate-150 hover:border-emerald-500 bg-white hover:bg-emerald-50/5 flex items-center space-x-4 text-left transition duration-300 shadow-sm hover:shadow-md cursor-pointer"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50/85 text-emerald-600 border border-emerald-100/50 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-transparent flex items-center justify-center transition-all duration-300 shadow-sm">
+                    <Coins className="w-5.5 h-5.5 transition duration-300" strokeWidth={1.75} />
+                  </div>
+                  <div className="flex-grow">
+                    <strong className="block text-xs font-black text-slate-900 tracking-tight transition duration-200 group-hover:text-emerald-700">Request Wallet Address</strong>
+                    <span className="block text-[10px] text-slate-400 font-normal leading-normal mt-0.5 animate-pulse">Request the official cryptocurrency wallet details for your donation.</span>
+                  </div>
+                  <span className="text-slate-350 group-hover:text-emerald-500 transition transform group-hover:translate-x-1 font-bold text-xs font-mono">➔</span>
+                </button>
+
+              </div>
+
+              {/* Footnote information */}
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-center space-x-1.5 text-[9px] text-slate-400 font-bold uppercase font-mono tracking-wider">
+                <Lock className="w-3 h-3 text-emerald-500" />
+                <span>Secure Direct Allocation Routing</span>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <CipherAdminPanel 
+        isOpen={isCipherOpen} 
+        onClose={() => setIsCipherOpen(false)} 
+      />
 
     </div>
   );

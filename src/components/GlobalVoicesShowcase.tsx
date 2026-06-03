@@ -144,12 +144,12 @@ export const GlobalVoicesShowcase: React.FC<GlobalVoicesShowcaseProps> = ({ onNa
             <span>Appreciation Stream // Live Updates</span>
           </div>
 
-          <div className="relative w-full flex items-center overflow-hidden select-none whitespace-nowrap border-y border-white/10 bg-black/95 py-6 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+          <div className="relative w-full flex items-center overflow-hidden select-none whitespace-nowrap border-y border-white/10 bg-black/50 py-6 shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
             <div className="flex animate-marquee hover:pause whitespace-nowrap">
               {duplicatedVoices.map((voice, idx) => (
                 <div 
                   key={`${voice.id}-${idx}`}
-                  className="w-[280px] sm:w-[350px] md:w-[380px] shrink-0 inline-block bg-white/5 backdrop-blur-lg border border-white/10 hover:border-[#F4511E]/30 hover:scale-[1.015] hover:bg-white/10 rounded-2xl p-4 sm:p-5 md:p-6 shadow-[0_12px_45px_rgba(0,0,0,0.15)] transition-all duration-300 ease-out mx-3 relative cursor-default"
+                  className="w-[280px] sm:w-[350px] md:w-[380px] shrink-0 inline-block bg-black/70 backdrop-blur-lg border border-white/10 hover:border-[#F4511E]/30 hover:scale-[1.015] hover:bg-black/80 rounded-2xl p-4 sm:p-5 md:p-6 shadow-[0_12px_45px_rgba(0,0,0,0.15)] transition-all duration-300 ease-out mx-3 relative cursor-default"
                 >
                   {/* Top author information */}
                   <div className="flex items-center justify-between mb-4 gap-2">

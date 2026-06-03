@@ -4,6 +4,7 @@ import { ActivePage, Program, Comment, BlogItem } from "./types";
 import { Navbar } from "./components/Navbar";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "./firebase";
+import { COUNTRIES_LIST } from "./data_countries";
 import CipherAdminPanel from "./components/CipherAdminPanel";
 import { ServicePages } from "./components/ServicePages";
 import { GlobalVoices } from "./components/GlobalVoices";
@@ -821,25 +822,6 @@ const OrgCTA: React.FC<{ onNavigate: (page: ActivePage) => void }> = ({ onNaviga
   );
 };
 
-const COUNTRIES_LIST = [
-  { name: "United States", code: "+1", flag: "🇺🇸", length: 10 },
-  { name: "Paraguay", code: "+595", flag: "🇵🇾", length: 9 },
-  { name: "United Kingdom", code: "+44", flag: "🇬🇧", length: 10 },
-  { name: "Canada", code: "+1", flag: "🇨🇦", length: 10 },
-  { name: "United Arab Emirates", code: "+971", flag: "🇦🇪", length: 9 },
-  { name: "Saudi Arabia", code: "+966", flag: "🇸🇦", length: 9 },
-  { name: "Australia", code: "+61", flag: "🇦🇺", length: 9 },
-  { name: "Slovakia", code: "+421", flag: "🇸🇰", length: 9 },
-  { name: "Switzerland", code: "+41", flag: "🇨🇭", length: 9 },
-  { name: "Singapore", code: "+65", flag: "🇸🇬", length: 8 },
-  { name: "Germany", code: "+49", flag: "🇩🇪", length: 10 },
-  { name: "Qatar", code: "+974", flag: "🇶🇦", length: 8 },
-  { name: "India", code: "+91", flag: "🇮🇳", length: 10 },
-  { name: "France", code: "+33", flag: "🇫🇷", length: 9 },
-  { name: "Kyrgyzstan", code: "+996", flag: "🇰🇬", length: 9 },
-  { name: "Guatemala", code: "+502", flag: "🇬🇹", length: 8 },
-  { name: "Egypt", code: "+20", flag: "🇪🇬", length: 10 },
-];
 
 const VALID_PAGES: Set<string> = new Set([
   "home", "about", "vision", "mission", "programs", "campaigns", "donate", "volunteer", "partner",
@@ -1218,9 +1200,19 @@ export default function App() {
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isDonationPressed, setIsDonationPressed] = useState(false);
-  const [isCipherOpen, setIsCipherOpen] = useState(false);
+  const [isCipherOpen, setIsCipherOpen] = useState(() => {
+    return localStorage.getItem("isCipherOpen") === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("isCipherOpen", isCipherOpen ? "true" : "false");
+  }, [isCipherOpen]);
   const [volunteerEmail, setVolunteerEmail] = useState("");
   const [volunteerPhone, setVolunteerPhone] = useState("");
+  const [selectedVolunteerCountryObj, setSelectedVolunteerCountryObj] = useState(COUNTRIES_LIST[0]);
+  const [isVolunteerCountryDropdownOpen, setIsVolunteerCountryDropdownOpen] = useState(false);
+  const [volunteerCountrySearchQuery, setVolunteerCountrySearchQuery] = useState("");
+  const [volunteerPhoneValidationTouched, setVolunteerPhoneValidationTouched] = useState(false);
 
   useEffect(() => {
     if (paymentSuccess || showPaymentPopup) {
@@ -1319,6 +1311,8 @@ ${finalLine}`;
         phoneNumber: `${selectedCountryObj.code} ${payerPhone.trim()}`,
         amount: Number(donateAmount) || 1000,
         paymentMethod: method,
+        prayerRequest: payerWishes.trim() || "",
+        prayerForCharity: payerPrayer.trim() || "",
         timestamp: new Date().toISOString(),
         status: "Pending"
       });
@@ -4344,7 +4338,8 @@ ${finalLine}`;
                                 <div className="max-h-60 overflow-y-auto divide-y divide-[#F9F9F9]">
                                   {COUNTRIES_LIST.filter(c => 
                                     c.name.toLowerCase().includes(countrySearchQuery.toLowerCase()) || 
-                                    c.code.includes(countrySearchQuery)
+                                    c.code.includes(countrySearchQuery) ||
+                                    c.iso2.toLowerCase().includes(countrySearchQuery.toLowerCase())
                                   ).map((country) => (
                                     <button
                                       type="button"
@@ -4725,12 +4720,16 @@ ${finalLine}`;
                 <form 
                   onSubmit={async (e) => { 
                     e.preventDefault(); 
+                    if (volunteerPhone.length !== selectedVolunteerCountryObj.length) {
+                      setVolunteerPhoneValidationTouched(true);
+                      return;
+                    }
                     try {
                       const dbPath = "volunteers";
                       await addDoc(collection(db, dbPath), {
                         fullName: volunteerName,
                         email: volunteerEmail,
-                        phoneNumber: volunteerPhone,
+                        phoneNumber: `${selectedVolunteerCountryObj.code} ${volunteerPhone.trim()}`,
                         submittedInfo: `Skill Cluster: ${volunteerSkill}, Committed Schedule: ${volunteerHours}`,
                         timestamp: new Date().toISOString()
                       });
@@ -4763,7 +4762,87 @@ ${finalLine}`;
                     </div>
                     <div>
                       <label className="text-slate-500 block mb-1 font-bold">Phone Number</label>
-                      <input type="text" required value={volunteerPhone} onChange={(e) => setVolunteerPhone(e.target.value)} className="w-full bg-white border border-[#EAEAEA] focus:border-[#F4511E] text-[#111111] font-bold rounded-xl py-2.5 px-4 outline-none transition placeholder-slate-400" placeholder="+971 50 123 4567" />
+                      <div className="relative flex items-stretch space-x-2">
+                        {/* Selector Dropdown */}
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setIsVolunteerCountryDropdownOpen(!isVolunteerCountryDropdownOpen)}
+                            className="h-full flex items-center justify-between space-x-2 px-3 border border-[#EAEAEA] hover:border-[#F4511E] rounded-xl bg-white text-[11px] font-bold transition-all focus:outline-none min-w-[95px] cursor-pointer"
+                          >
+                            <span className="text-sm leading-none">{selectedVolunteerCountryObj.flag}</span>
+                            <span className="text-slate-800 font-mono font-bold">{selectedVolunteerCountryObj.code}</span>
+                            <span className="text-slate-400 text-[9px] scale-90">▼</span>
+                          </button>
+
+                          {isVolunteerCountryDropdownOpen && (
+                            <div className="absolute right-0 lg:left-0 mt-2 w-72 bg-white border border-[#EAEAEA] rounded-2xl shadow-xl z-50 overflow-hidden font-sans animate-fade-in shadow-2xl">
+                              <div className="p-3 border-b border-[#F4F4F4] bg-[#FAFAFA]">
+                                <input
+                                  type="text"
+                                  placeholder="Search global country code..."
+                                  value={volunteerCountrySearchQuery}
+                                  onChange={(e) => setVolunteerCountrySearchQuery(e.target.value)}
+                                  className="w-full bg-white border border-[#EAEAEA] rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-[#F4511E] font-medium"
+                                />
+                              </div>
+                              <div className="max-h-60 overflow-y-auto divide-y divide-[#F9F9F9]">
+                                {COUNTRIES_LIST.filter(c => 
+                                  c.name.toLowerCase().includes(volunteerCountrySearchQuery.toLowerCase()) || 
+                                  c.code.includes(volunteerCountrySearchQuery) ||
+                                  c.iso2.toLowerCase().includes(volunteerCountrySearchQuery.toLowerCase())
+                                ).map((country) => (
+                                  <button
+                                    type="button"
+                                    key={country.name + country.code}
+                                    onClick={() => {
+                                      setSelectedVolunteerCountryObj(country);
+                                      setVolunteerPhone(""); // Clear number to enforce fresh length
+                                      setVolunteerCountrySearchQuery("");
+                                      setIsVolunteerCountryDropdownOpen(false);
+                                    }}
+                                    className="w-full flex items-center space-x-3 px-4 py-2.5 text-left text-xs text-[#111111] hover:bg-slate-50 transition font-medium cursor-pointer"
+                                  >
+                                    <span className="text-base">{country.flag}</span>
+                                    <span className="font-mono font-bold w-12 text-slate-500">{country.code}</span>
+                                    <span className="truncate text-slate-800 font-bold">{country.name}</span>
+                                    <span className="text-[10px] font-mono text-slate-400 ml-auto font-medium">({country.length} d)</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Input digits */}
+                        <div className="relative flex-grow">
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            required
+                            value={volunteerPhone}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(/\D/g, "");
+                              const limit = selectedVolunteerCountryObj.length;
+                              setVolunteerPhone(limit ? digits.slice(0, limit) : digits);
+                              setVolunteerPhoneValidationTouched(true);
+                            }}
+                            placeholder="Enter contact number"
+                            className={`w-full bg-white border text-[#111111] focus:ring-4 rounded-xl px-4 py-2.5 text-xs outline-none font-mono font-bold placeholder-slate-400 transition-all duration-300 shadow-sm ${
+                              volunteerPhoneValidationTouched && volunteerPhone.length !== selectedVolunteerCountryObj.length
+                                ? "border-rose-500 focus:border-rose-600 focus:ring-rose-500/5 bg-rose-50/10"
+                                : "border-[#EAEAEA] focus:border-[#F4511E] focus:ring-[#F4511E]/5"
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      {volunteerPhoneValidationTouched && volunteerPhone.length !== selectedVolunteerCountryObj.length && (
+                        <p className="text-[10px] text-rose-500 font-bold tracking-tight animate-fade-in mt-1">
+                          ⚠️ Incomplete: {selectedVolunteerCountryObj.name} numbers require exactly {selectedVolunteerCountryObj.length} digits after country code.
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div>

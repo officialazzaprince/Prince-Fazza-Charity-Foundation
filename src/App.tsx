@@ -1205,10 +1205,8 @@ export default function App() {
   const [emailValidationTouched, setEmailValidationTouched] = useState(false);
   const [phoneValidationTouched, setPhoneValidationTouched] = useState(false);
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
-  const [showCookieBanner, setShowCookieBanner] = useState(() => {
-    return localStorage.getItem("pf_cookie_consent") !== "accepted";
-  });
-  const [showBudgetPopup, setShowBudgetPopup] = useState(true);
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
+  const [showBudgetPopup, setShowBudgetPopup] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isDonationPressed, setIsDonationPressed] = useState(false);
   
@@ -1226,6 +1224,21 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("isCipherOpen", isCipherOpen ? "true" : "false");
   }, [isCipherOpen]);
+
+  useEffect(() => {
+    const lacksCookieConsent = localStorage.getItem("pf_cookie_consent") !== "accepted";
+    if (lacksCookieConsent) {
+      const timer = setTimeout(() => {
+        setShowCookieBanner(true);
+      }, 4500); // Show cookie consent banner after 4.5 seconds
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => {
+        setShowBudgetPopup(true);
+      }, 4500); // Show budget popup after 4.5 seconds if cookie accepted
+      return () => clearTimeout(timer);
+    }
+  }, []);
   const [volunteerEmail, setVolunteerEmail] = useState("");
   const [volunteerPhone, setVolunteerPhone] = useState("");
   const [selectedVolunteerCountryObj, setSelectedVolunteerCountryObj] = useState(COUNTRIES_LIST[0]);
@@ -5570,7 +5583,9 @@ ${finalLine}`;
                 <button
                   type="button"
                   onClick={() => {
-                    const el = document.getElementById("live-donation-feed-portal");
+                    const isMobile = window.innerWidth < 640;
+                    const targetId = isMobile ? "live-donation-activity-card" : "live-donation-feed-portal";
+                    const el = document.getElementById(targetId) || document.getElementById("live-donation-feed-portal");
                     if (el) {
                       el.scrollIntoView({ behavior: "smooth", block: "center" });
                     }
@@ -6559,7 +6574,9 @@ ${finalLine}`;
                   onClick={() => {
                     localStorage.setItem("pf_cookie_consent", "accepted");
                     setShowCookieBanner(false);
-                    setShowBudgetPopup(true);
+                    setTimeout(() => {
+                      setShowBudgetPopup(true);
+                    }, 2000);
                   }}
                   className="w-full sm:w-auto bg-[#F4511E] hover:bg-[#ff693b] text-white px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer text-center"
                 >
@@ -6569,7 +6586,9 @@ ${finalLine}`;
                   type="button"
                   onClick={() => {
                     setShowCookieBanner(false);
-                    setShowBudgetPopup(true);
+                    setTimeout(() => {
+                      setShowBudgetPopup(true);
+                    }, 2000);
                   }}
                   className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 border border-white/5 cursor-pointer text-center"
                 >

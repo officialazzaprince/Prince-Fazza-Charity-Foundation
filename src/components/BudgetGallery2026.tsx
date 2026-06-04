@@ -961,9 +961,20 @@ export const BudgetGallery2026: React.FC<BudgetGallery2026Props> = ({ onNavigate
           <div id="live-donation-feed-portal" className="lg:col-span-8 bg-white border-y sm:border border-slate-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] text-slate-900 rounded-none sm:rounded-[28px] -mx-4 sm:mx-0 p-4 sm:p-8 space-y-6">
             
             {/* LIVE DONATION ACTIVITY */}
-            <div className="relative space-y-3 bg-white border border-emerald-500/20 rounded-2xl p-4 shadow-[0_12px_32px_rgba(16,185,129,0.08)]">
+            <div id="live-donation-activity-card" className="relative space-y-3 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-[0_12px_36px_rgba(16,185,129,0.06)]">
               {/* Constant Fading & Fade-out Pulsing Green Border Indicator */}
-              <div className="absolute inset-0 border-2 border-emerald-500 rounded-2xl pointer-events-none animate-pulse" />
+              <motion.div 
+                animate={{ 
+                  borderColor: ["rgba(16, 185, 129, 0.2)", "rgba(16, 185, 129, 0.75)", "rgba(16, 185, 129, 0.2)"],
+                  boxShadow: [
+                    "0 0 4px rgba(16, 185, 129, 0.04)", 
+                    "0 0 16px rgba(16, 185, 129, 0.18)", 
+                    "0 0 4px rgba(16, 185, 129, 0.04)"
+                  ]
+                }}
+                transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+                className="absolute inset-0 border-2 rounded-2xl pointer-events-none" 
+              />
               
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200/60 pb-2 gap-2 relative z-10">
                 <div className="flex items-center gap-2">
@@ -976,9 +987,13 @@ export const BudgetGallery2026: React.FC<BudgetGallery2026Props> = ({ onNavigate
                   <span className="text-[11px] font-mono font-bold text-[#F4511E] bg-orange-50 border border-orange-500/10 px-2.5 py-0.5 rounded">
                     👤 {new Intl.NumberFormat('en-US').format(donorCount)} donors
                   </span>
-                  <span className="text-[9px] font-mono font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded uppercase tracking-wider">
-                    Realtime Feed
-                  </span>
+                  <motion.span 
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{ repeat: Infinity, duration: 2.0, ease: "easeInOut" }}
+                    className="text-[9px] font-mono font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider inline-flex items-center"
+                  >
+                    Real-Time Feed
+                  </motion.span>
                 </div>
               </div>
 
@@ -1022,14 +1037,15 @@ export const BudgetGallery2026: React.FC<BudgetGallery2026Props> = ({ onNavigate
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs uppercase font-mono tracking-wider text-slate-500 font-semibold">Total Program Funding Secured</span>
-                <span className="text-sm font-mono font-black text-emerald-600">Target Value: $68.025B</span>
+            {/* TOTAL PROGRAM FUNDING SECURED CARD CONTAINER */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_8px_24px_rgba(0,0,0,0.03)] space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-baseline gap-2">
+                <span className="text-xs uppercase font-mono tracking-wider text-slate-600 font-extrabold">Total Program Funding Secured</span>
+                <span className="text-xs font-mono font-black text-emerald-700 bg-emerald-50 border border-emerald-500/10 px-2.5 py-0.5 rounded shadow-[0_2px_8px_rgba(16,185,129,0.05)]">Target Value: $68.025B</span>
               </div>
               
               {/* Dynamic progress bar */}
-              <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-slate-100/80 rounded-full h-3.5 overflow-hidden border border-slate-200/40">
                 <div 
                   className="bg-gradient-to-r from-orange-500 to-emerald-500 h-full transition-all duration-500" 
                   style={{ width: `${progressPct}%` }}
@@ -1037,23 +1053,24 @@ export const BudgetGallery2026: React.FC<BudgetGallery2026Props> = ({ onNavigate
               </div>
 
               <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
-                <span>Vetted Phase 1 Commitments ($1.9B)</span>
-                <span>Remaining Needs ($66.125B)</span>
+                <span className="font-semibold text-slate-600">Vetted Phase 1 Commitments ($1.9B)</span>
+                <span className="font-semibold text-slate-600">Remaining Needs ($66.125B)</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-200/60 text-center sm:text-left">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                <span className="text-[9px] uppercase font-mono text-slate-500 font-semibold tracking-wider block">Phase 1 Sourced</span>
+            {/* DONATION STATISTICS GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-200/60">
+              <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-[0_6px_20px_rgba(0,0,0,0.03)] text-center sm:text-left hover:shadow-md transition-shadow">
+                <span className="text-[9px] uppercase font-mono text-slate-500 font-bold tracking-wider block mb-1">Phase 1 Sourced</span>
                 <AnimatedCounter value={fundingValue} />
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                <span className="text-[9px] uppercase font-mono text-slate-500 font-semibold tracking-wider block">Active Field Units</span>
-                <span className="text-base font-bold font-mono text-slate-900">4 Operational</span>
+              <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-[0_6px_20px_rgba(0,0,0,0.03)] text-center sm:text-left hover:shadow-md transition-shadow">
+                <span className="text-[9px] uppercase font-mono text-slate-500 font-bold tracking-wider block mb-1">Active Field Units</span>
+                <span className="text-base font-black font-mono text-slate-900">4 Operational</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                <span className="text-[9px] uppercase font-mono text-slate-500 font-semibold tracking-wider block">Audit Standard</span>
-                <span className="text-base font-bold font-mono text-[#F4511E]">Absolute Zero Leak</span>
+              <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-[0_6px_20px_rgba(0,0,0,0.03)] text-center sm:text-left hover:shadow-md transition-shadow">
+                <span className="text-[9px] uppercase font-mono text-slate-500 font-bold tracking-wider block mb-1">Audit Standard</span>
+                <span className="text-base font-black font-mono text-[#F4511E]">Absolute Zero Leak</span>
               </div>
             </div>
           </div>

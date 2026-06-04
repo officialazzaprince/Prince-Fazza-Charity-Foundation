@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1100" width="100%" height="100%">
+  <rect width="800" height="1100" fill="#FFFFFF" rx="8" />
+  <rect x="25" y="25" width="750" height="1050" fill="none" stroke="#F1F5F9" stroke-width="2" rx="6" />
+  <rect x="35" y="35" width="730" height="1030" fill="none" stroke="#F8FAFC" stroke-width="1" rx="4" />
+  
+  <!-- Subtle Header Lines -->
+  <line x1="35" y1="130" x2="765" y2="130" stroke="#F1F5F9" stroke-width="1" />
+  <line x1="35" y1="980" x2="765" y2="980" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Page Header -->
+  <text x="75" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="900" fill="#0F172A" letter-spacing="-0.5">
+    SCHOOL RENOVATION PROGRAM
+  </text>
+  <text x="75" y="105" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" fill="#EA580C" letter-spacing="0.5">
+    ASIA = 12 Schools
+  </text>
+
+  <!-- Table Core Headers -->
+  <rect x="60" y="160" width="680" height="40" fill="#F8FAFC" rx="6" />
+  <text x="75" y="185" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="800" fill="#475569" uppercase="true">School</text>
+  <text x="355" y="185" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="800" fill="#475569" uppercase="true">Province/State</text>
+  <text x="725" y="185" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="800" fill="#475569" uppercase="true">Budget</text>
+
+  <!-- Data Rows (Total 12 Schools, styled clearly) -->
+  <!-- Row 1 -->
+  <text x="75" y="235" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Silver Banyan Academy</text>
+  <text x="355" y="235" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Karnataka, India</text>
+  <text x="725" y="235" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$980,000,000</text>
+  <line x1="60" y1="250" x2="740" y2="250" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 2 -->
+  <text x="75" y="285" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Horizon Crest Institute</text>
+  <text x="355" y="285" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Maharashtra, India</text>
+  <text x="725" y="285" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$975,000,000</text>
+  <line x1="60" y1="300" x2="740" y2="300" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 3 -->
+  <text x="75" y="335" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Lotus Meridian School</text>
+  <text x="355" y="335" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Lào Cai Province, Vietnam</text>
+  <text x="725" y="335" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$965,000,000</text>
+  <line x1="60" y1="350" x2="740" y2="350" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 4 -->
+  <text x="75" y="385" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Emerald Delta Academy</text>
+  <text x="355" y="385" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Đồng Tháp Province, Vietnam</text>
+  <text x="725" y="385" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$960,000,000</text>
+  <line x1="60" y1="400" x2="740" y2="400" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 5 -->
+  <text x="75" y="435" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Sunridge Technical College</text>
+  <text x="355" y="435" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Nagano Prefecture, Japan</text>
+  <text x="725" y="435" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$950,000,000</text>
+  <line x1="60" y1="450" x2="740" y2="450" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 6 -->
+  <text x="75" y="485" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Kiyora Learning Institute</text>
+  <text x="355" y="485" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Akita Prefecture, Japan</text>
+  <text x="725" y="485" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$945,000,000</text>
+  <line x1="60" y1="500" x2="740" y2="500" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 7 -->
+  <text x="75" y="535" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Golden Cedar School</text>
+  <text x="355" y="535" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Selangor, Malaysia</text>
+  <text x="725" y="535" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$935,000,000</text>
+  <line x1="60" y1="550" x2="740" y2="550" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 8 -->
+  <text x="75" y="585" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Pacific Ridge Academy</text>
+  <text x="355" y="585" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Sabah, Malaysia</text>
+  <text x="725" y="585" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$930,000,000</text>
+  <line x1="60" y1="600" x2="740" y2="600" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 9 -->
+  <text x="75" y="635" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Blue Harbor Preparatory School</text>
+  <text x="355" y="635" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">West Java, Indonesia</text>
+  <text x="725" y="635" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$925,000,000</text>
+  <line x1="60" y1="650" x2="740" y2="650" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 10 -->
+  <text x="75" y="685" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Meridian Valley Institute</text>
+  <text x="355" y="685" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Central Java, Indonesia</text>
+  <text x="725" y="685" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$920,000,000</text>
+  <line x1="60" y1="700" x2="740" y2="700" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 11 -->
+  <text x="75" y="735" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Jade Falcon Academy</text>
+  <text x="355" y="735" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Arkhangai Province, Mongolia</text>
+  <text x="725" y="735" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$910,000,000</text>
+  <line x1="60" y1="750" x2="740" y2="750" stroke="#F1F5F9" stroke-width="1" />
+
+  <!-- Row 12 (Silk Route School) -->
+  <text x="75" y="785" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1E293B">Silk Route Science School</text>
+  <text x="355" y="785" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#475569">Almaty Region, Kazakhstan</text>
+  <text x="725" y="785" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#0F172A">$905,000,000</text>
+  <line x1="60" y1="800" x2="740" y2="800" stroke="#E2E8F0" stroke-width="1.5" />
+
+  <!-- Summary Row -->
+  <rect x="60" y="815" width="680" height="45" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1" rx="6" />
+  <text x="75" y="842" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="850" fill="#1E293B">Asia Schools Total:</text>
+  <text x="725" y="843" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="900" fill="#EA580C">$11,300,000,000</text>
+
+  <!-- Footer Info -->
+  <text x="400" y="1035" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" fill="#94A3B8" letter-spacing="1">
+    PAGE 2 OF 14 • CONFIDENTIAL ADMINISTRATIVE RECORDS
+  </text>
+</svg>

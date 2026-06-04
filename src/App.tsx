@@ -10,6 +10,7 @@ import { ServicePages } from "./components/ServicePages";
 import { GlobalVoices } from "./components/GlobalVoices";
 import { GlobalVoicesAddCommentary } from "./components/GlobalVoicesAddCommentary";
 import { GlobalVoicesShowcase } from "./components/GlobalVoicesShowcase";
+import { BudgetGallery2026, generateGalleryItems, GalleryItem } from "./components/BudgetGallery2026";
 import { PremiumDonateButton } from "./components/PremiumDonateButton";
 import { translate, translateParagraph, TOP_LANGUAGES } from "./translation";
 import childrenPlayingImg from "./assets/images/children_playing_field_1780309954729.png";
@@ -76,8 +77,14 @@ import {
   Youtube,
   Share2,
   Landmark,
-  Coins
+  Coins,
+  X,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Download
 } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 const optimizeImageUrl = (url: string, isMobile: boolean = false): string => {
   if (!url) return "";
@@ -831,7 +838,7 @@ const VALID_PAGES: Set<string> = new Set([
   "contact", "hiv-support", "halfway-house", "vulnerable-foreigners", "seminar-request", "health-ambassadors",
   "children-home", "shelter-placement", "medical-care", "mother-child", "visit-care", "emergency-relief",
   "scholarships", "medical-outreach", "women-empowerment", "child-support", "orphanage-support", "food-relief",
-  "sustainability", "water-projects", "privacy", "terms"
+  "sustainability", "water-projects", "privacy", "terms", "2026-budget-gallery"
 ]);
 
 function isValidActivePage(page: string): page is ActivePage {
@@ -1198,8 +1205,20 @@ export default function App() {
   const [emailValidationTouched, setEmailValidationTouched] = useState(false);
   const [phoneValidationTouched, setPhoneValidationTouched] = useState(false);
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+  const [showCookieBanner, setShowCookieBanner] = useState(() => {
+    return localStorage.getItem("pf_cookie_consent") !== "accepted";
+  });
+  const [showBudgetPopup, setShowBudgetPopup] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isDonationPressed, setIsDonationPressed] = useState(false);
+  
+  // 2026 Budget Gallery Lightbox & PDF download states
+  const [activeBudgetImg, setActiveBudgetImg] = useState<string | null>(null);
+  const [budgetZoom, setBudgetZoom] = useState<number>(1);
+  const [budgetPan, setBudgetPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isBudgetDragging, setIsBudgetDragging] = useState<boolean>(false);
+  const [budgetPanStart, setBudgetPanStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState<boolean>(false);
   const [isCipherOpen, setIsCipherOpen] = useState(() => {
     return localStorage.getItem("isCipherOpen") === "true";
   });
@@ -1230,6 +1249,777 @@ export default function App() {
     { name: "Eleanor Hughes", amount: 5000, time: "9 min ago", project: "Women Grants" },
     { name: "Dr. Fatima Al Suwaidi", amount: 7500, time: "18 min ago", project: "Water Aquifers" },
   ]);
+
+  const handleDownloadBudget = () => {
+    setIsDownloadingPdf(true);
+    try {
+      const doc = new jsPDF("p", "mm", "a4");
+      
+      const drawPageFramework = (docObj: any, pageNum: number, pageTitle: string) => {
+        // Frame border
+        docObj.setDrawColor(241, 245, 249);
+        docObj.setLineWidth(0.5);
+        docObj.rect(8, 8, 194, 281);
+        
+        // Subtle top and bottom lines
+        docObj.setDrawColor(226, 232, 240);
+        docObj.line(12, 35, 198, 35);
+        docObj.line(12, 275, 198, 275);
+        
+        // Header Title
+        docObj.setFont("helvetica", "bold");
+        docObj.setFontSize(9);
+        docObj.setTextColor(15, 23, 42);
+        docObj.text("PRINCE FAZZA CHARITY FOUNDATION 2026", 12, 22);
+        
+        docObj.setFont("helvetica", "normal");
+        docObj.setFontSize(8);
+        docObj.setTextColor(234, 88, 12);
+        docObj.text("HUMANITARIAN DEVELOPMENT BUDGET", 12, 28);
+        
+        // Right side Page title
+        docObj.setFont("helvetica", "italic");
+        docObj.setTextColor(71, 85, 105);
+        docObj.text(pageTitle, 198, 22, { align: "right" });
+        
+        // Footer
+        docObj.setFont("helvetica", "bold");
+        docObj.setFontSize(7);
+        docObj.setTextColor(148, 163, 184);
+        docObj.text(`PAGE ${pageNum} OF 14 • CONFIDENTIAL ADMINISTRATIVE RECORDS`, 105, 282, { align: "center" });
+      };
+
+      // PAGE 1: PROJECT MASTER SCOPE & GLOBAL COVERAGE
+      drawPageFramework(doc, 1, "PROJECT MASTER SCOPE");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(15, 23, 42);
+      doc.text("2026 CHARITY DEVELOPMENT MASTER SCOPE", 12, 48);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(71, 85, 105);
+      doc.text("Approved Appropriations Matrix for Facility Construction and Triage Operations", 12, 54);
+      
+      doc.setDrawColor(226, 232, 240);
+      doc.line(12, 59, 198, 59);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Global Operations Infrastructure Distribution Outline:", 12, 70);
+
+      const scopeItems = [
+        "33 School Renovations Across Active Rural Provinces",
+        "28 Critical Hospital Medical Wing & Emergency Facility Renovations",
+        "50 Homes for the Homeless Construction initiatives",
+        "50 Homeless Community Shelter Infrastructure Modules",
+        "5 Global Academic Mentorship & Sovereign Leadership Hubs",
+        "2 Sovereign-Level Emergency Hunger Relief Operations",
+        "Continuous Multi-Regional Food Bank Logistics Support Base",
+        "Rural Agricultural and Water Pipeline Infrastructure Reservoir Support"
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(51, 65, 85);
+      scopeItems.forEach((item, index) => {
+        doc.setFillColor(234, 88, 12);
+        doc.circle(16, 82 + (index * 12), 1, "F");
+        doc.text(item, 22, 84 + (index * 12));
+      });
+
+      // Highlight Box: Target Grand Total
+      doc.setFillColor(255, 247, 237);
+      doc.setDrawColor(253, 186, 116);
+      doc.rect(12, 190, 186, 50, "DF");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.text("MASTER ALLOCATION TARGET UNIT:", 18, 208);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(234, 88, 12);
+      doc.text("$68,025,211,000 USD", 18, 225);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Fully endowed and scheduled for logistics disbursement over calendar fiscal year 2026.", 18, 233);
+
+      // PAGE 2: SCHOOL RENOVATIONS - ASIA
+      doc.addPage();
+      drawPageFramework(doc, 2, "SCHOOL RENOVATIONS - ASIA");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("SCHOOL RENOVATION PROGRAM: ASIA (12 Schools)", 12, 48);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Primary educational logistics and structural upgrades in rural and peripheral zones.", 12, 54);
+
+      let tableY = 64;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text("School Name", 15, tableY + 7);
+      doc.text("Province/State", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const asiaSchools = [
+        { name: "Silver Banyan Academy", loc: "Karnataka, India", budget: "$980,000,000" },
+        { name: "Horizon Crest Institute", loc: "Maharashtra, India", budget: "$975,000,000" },
+        { name: "Lotus Meridian School", loc: "Lao Cai Province, Vietnam", budget: "$965,000,000" },
+        { name: "Emerald Delta Academy", loc: "Dong Thap Province, Vietnam", budget: "$960,000,000" },
+        { name: "Sunridge Technical College", loc: "Nagano Prefecture, Japan", budget: "$950,000,000" },
+        { name: "Kiyora Learning Institute", loc: "Akita Prefecture, Japan", budget: "$945,000,000" },
+        { name: "Golden Cedar School", loc: "Selangor, Malaysia", budget: "$935,000,000" },
+        { name: "Pacific Ridge Academy", loc: "Sabah, Malaysia", budget: "$930,000,000" },
+        { name: "Blue Harbor Preparatory School", loc: "West Java, Indonesia", budget: "$925,000,000" },
+        { name: "Meridian Valley Institute", loc: "Central Java, Indonesia", budget: "$920,000,000" },
+        { name: "Jade Falcon Academy", loc: "Arkhangai Province, Mongolia", budget: "$910,000,000" },
+        { name: "Silk Route Science School", loc: "Almaty Region, Kazakhstan", budget: "$905,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      asiaSchools.forEach((school) => {
+        doc.text(school.name, 15, tableY + 7);
+        doc.text(school.loc, 100, tableY + 7);
+        doc.text(school.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 11, 198, tableY + 11);
+        tableY += 11;
+      });
+
+      // Total row
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Asia Schools Total:", 15, tableY + 10);
+      doc.text("$11,300,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 3: SCHOOL RENOVATIONS - EUROPE
+      doc.addPage();
+      drawPageFramework(doc, 3, "SCHOOL RENOVATIONS - EUROPE");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("SCHOOL RENOVATION PROGRAM: EUROPE (15 Schools)", 12, 48);
+      
+      tableY = 58;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text("School Name", 15, tableY + 7);
+      doc.text("Province/State", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const euroSchools = [
+        { name: "Alderstone Academy", loc: "Bavaria, Germany", budget: "$730,000,000" },
+        { name: "North Elbe Institute", loc: "Lower Saxony, Germany", budget: "$725,000,000" },
+        { name: "Greenmoor School", loc: "County Clare, Ireland", budget: "$720,000,000" },
+        { name: "Atlantic Ridge College", loc: "County Kerry, Ireland", budget: "$715,000,000" },
+        { name: "Silver Coast Academy", loc: "Faro District, Portugal", budget: "$710,000,000" },
+        { name: "Iberian Heights School", loc: "Aragon, Spain", budget: "$705,000,000" },
+        { name: "Rivergate Preparatory School", loc: "Galicia, Spain", budget: "$700,000,000" },
+        { name: "Alpine Crest Institute", loc: "Valais, Switzerland", budget: "$695,000,000" },
+        { name: "Linden Grove Academy", loc: "Styria, Austria", budget: "$690,000,000" },
+        { name: "Danube Horizon School", loc: "Bacs-Kiskun, Hungary", budget: "$685,000,000" },
+        { name: "Baltic Pines School", loc: "Parnu County, Estonia", budget: "$680,000,000" },
+        { name: "Aurora Technical Institute", loc: "North Karelia, Finland", budget: "$675,000,000" },
+        { name: "Highland Beacon Academy", loc: "Highland, Scotland", budget: "$670,000,000" },
+        { name: "Carpathian Learning Centre", loc: "Brasov, Romania", budget: "$665,000,000" },
+        { name: "Sapphire Valley School", loc: "Smolyan, Bulgaria", budget: "$660,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      euroSchools.forEach((school) => {
+        doc.text(school.name, 15, tableY + 6);
+        doc.text(school.loc, 100, tableY + 6);
+        doc.text(school.budget, 195, tableY + 6, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 10, 198, tableY + 10);
+        tableY += 10;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Europe Schools Total:", 15, tableY + 10);
+      doc.text("$10,425,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 4: SCHOOL RENOVATIONS - NORTH AMERICA
+      doc.addPage();
+      drawPageFramework(doc, 4, "SCHOOL RENOVATIONS - NORTH AMERICA");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("SCHOOL RENOVATION PROGRAM: NORTH AMERICA (6 Schools)", 12, 48);
+
+      tableY = 64;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text("School Name", 15, tableY + 7);
+      doc.text("Province/State", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const naSchools = [
+        { name: "Red Maple Academy", loc: "Ontario, Canada", budget: "$500,000,000" },
+        { name: "Northern Lights Institute", loc: "Manitoba, Canada", budget: "$495,000,000" },
+        { name: "Prairie Horizon School", loc: "Saskatchewan, Canada", budget: "$490,000,000" },
+        { name: "Desert Crest Academy", loc: "New Mexico, USA", budget: "$485,000,000" },
+        { name: "Blue Canyon Preparatory School", loc: "Utah, USA", budget: "$480,000,000" },
+        { name: "Great Lakes Technical Institute", loc: "Michigan, USA", budget: "$475,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      naSchools.forEach((school) => {
+        doc.text(school.name, 15, tableY + 7);
+        doc.text(school.loc, 100, tableY + 7);
+        doc.text(school.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("North America Schools Total:", 15, tableY + 10);
+      doc.text("$2,925,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 5: HOSPITAL RENOVATIONS - ASIA
+      doc.addPage();
+      drawPageFramework(doc, 5, "HOSPITAL RENOVATIONS - ASIA");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("HOSPITAL RENOVATION PROGRAM: ASIA (10 Hospitals)", 12, 48);
+
+      tableY = 64;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text("Hospital Name", 15, tableY + 7);
+      doc.text("Province/State", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const asiaHospitals = [
+        { name: "Valley Crest Medical Centre", loc: "Kerala, India", budget: "$900,000,000" },
+        { name: "Banyan Plains General Hospital", loc: "Telangana, India", budget: "$890,000,000" },
+        { name: "Lotus River Hospital", loc: "An Giang, Vietnam", budget: "$880,000,000" },
+        { name: "Sunrise Provincial Hospital", loc: "Bac Giang, Vietnam", budget: "$870,000,000" },
+        { name: "Shinsei Community Hospital", loc: "Yamagata, Japan", budget: "$860,000,000" },
+        { name: "North Pine Regional Hospital", loc: "Hokkaido, Japan", budget: "$850,000,000" },
+        { name: "Emerald Coast Medical Centre", loc: "Sarawak, Malaysia", budget: "$840,000,000" },
+        { name: "Nusantara Valley Hospital", loc: "East Java, Indonesia", budget: "$830,000,000" },
+        { name: "Steppe Horizon Hospital", loc: "Ovorkhangai, Mongolia", budget: "$820,000,000" },
+        { name: "Caspian Frontier Medical Centre", loc: "Mangystau, Kazakhstan", budget: "$810,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      asiaHospitals.forEach((health) => {
+        doc.text(health.name, 15, tableY + 7);
+        doc.text(health.loc, 100, tableY + 7);
+        doc.text(health.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Asia Hospitals Total:", 15, tableY + 10);
+      doc.text("$8,550,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 6: HOSPITAL RENOVATIONS - EUROPE
+      doc.addPage();
+      drawPageFramework(doc, 6, "HOSPITAL RENOVATIONS - EUROPE");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("HOSPITAL RENOVATION PROGRAM: EUROPE (10 Hospitals)", 12, 48);
+
+      tableY = 64;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text("Hospital Name", 15, tableY + 7);
+      doc.text("Province/State", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const euroHospitals = [
+        { name: "Rhine Valley General Hospital", loc: "Rhine-Westphalia, Germany", budget: "$750,000,000" },
+        { name: "Alpine Regional Medical Centre", loc: "Tyrol, Austria", budget: "$740,000,000" },
+        { name: "Emerald Coast Hospital", loc: "Cork, Ireland", budget: "$730,000,000" },
+        { name: "Atlantic Community Hospital", loc: "Algarve, Portugal", budget: "$720,000,000" },
+        { name: "Sierra Norte Medical Centre", loc: "Madrid, Spain", budget: "$710,000,000" },
+        { name: "Baltic Health Institute Hospital", loc: "Harju County, Estonia", budget: "$700,000,000" },
+        { name: "Aurora Lakes Hospital", loc: "Lapland, Finland", budget: "$690,000,000" },
+        { name: "Highland Regional Hospital", loc: "Inverness, Scotland", budget: "$680,000,000" },
+        { name: "Carpathian Medical Centre", loc: "Sibiu, Romania", budget: "$670,000,000" },
+        { name: "Black Sea Community Hospital", loc: "Varna, Bulgaria", budget: "$660,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      euroHospitals.forEach((health) => {
+        doc.text(health.name, 15, tableY + 7);
+        doc.text(health.loc, 100, tableY + 7);
+        doc.text(health.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Europe Hospitals Total:", 15, tableY + 10);
+      doc.text("$7,050,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 7: HOSPITAL RENOVATIONS - NORTH AMERICA
+      doc.addPage();
+      drawPageFramework(doc, 7, "HOSPITAL RENOVATIONS - NORTH AMERICA");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("HOSPITAL RENOVATION PROGRAM: NORTH AMERICA (8 Hospitals)", 12, 48);
+
+      tableY = 64;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text("Hospital Name", 15, tableY + 7);
+      doc.text("Province/State", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const naHospitals = [
+        { name: "Maple River Hospital", loc: "Ontario, Canada", budget: "$500,000,000" },
+        { name: "Northern Prairie Medical Centre", loc: "Alberta, Canada", budget: "$490,000,000" },
+        { name: "Pacific Timber Hospital", loc: "British Columbia, Canada", budget: "$480,000,000" },
+        { name: "Desert Valley Regional Hospital", loc: "Arizona, USA", budget: "$470,000,000" },
+        { name: "Canyon Ridge Medical Centre", loc: "Nevada, USA", budget: "$460,000,000" },
+        { name: "Great Lakes Community Hospital", loc: "Wisconsin, USA", budget: "$450,000,000" },
+        { name: "Redwood Plains Hospital", loc: "Oregon, USA", budget: "$440,000,000" },
+        { name: "Frontier Health Medical Centre", loc: "Montana, USA", budget: "$430,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      naHospitals.forEach((health) => {
+        doc.text(health.name, 15, tableY + 7);
+        doc.text(health.loc, 100, tableY + 7);
+        doc.text(health.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("North America Hospitals Total:", 15, tableY + 10);
+      doc.text("$3,720,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 8: HOMES FOR THE HOMELESS
+      doc.addPage();
+      drawPageFramework(doc, 8, "HOMES FOR THE HOMELESS");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("HOMES FOR THE HOMELESS (50 Rural Villages)", 12, 48);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(71, 85, 105);
+      doc.text("Establishing permanent, resilient housing and micro-grid systems.", 12, 54);
+
+      tableY = 70;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Regions Covered", 15, tableY + 7);
+      doc.text("Target Volume", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const homeVillages = [
+        { reg: "Europe Rural Interior Villages", vol: "20 Villages • Off-grid housing blocks", budget: "$2,500,000,000" },
+        { reg: "Asia Rural Interior Villages", vol: "20 Villages • Water pipeline integration", budget: "$2,500,000,000" },
+        { reg: "North America Interior Villages", vol: "10 Villages • Thermal insulated cabins", budget: "$1,250,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      homeVillages.forEach((village) => {
+        doc.text(village.reg, 15, tableY + 7);
+        doc.text(village.vol, 100, tableY + 7);
+        doc.text(village.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Homes Program Total:", 15, tableY + 10);
+      doc.text("$6,250,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 9: HOMELESS COMMUNITY SHELTERS
+      doc.addPage();
+      drawPageFramework(doc, 9, "HOMELESS COMMUNITY SHELTERS");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("HOMELESS COMMUNITY SHELTERS (50 Rural Villages)", 12, 48);
+
+      tableY = 70;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Region Modules", 15, tableY + 7);
+      doc.text("Target Volume", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const shelterVillages = [
+        { reg: "Europe Shelter Systems", vol: "20 Villages • Integrated medical clinics", budget: "$2,500,000,000" },
+        { reg: "Asia Shelter Systems", vol: "20 Villages • Sanitation & logistics bases", budget: "$2,500,000,000" },
+        { reg: "North America Shelter Systems", vol: "10 Villages • Thermal winter design", budget: "$1,250,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      shelterVillages.forEach((village) => {
+        doc.text(village.reg, 15, tableY + 7);
+        doc.text(village.vol, 100, tableY + 7);
+        doc.text(village.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Shelter Program Total:", 15, tableY + 10);
+      doc.text("$6,250,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 10: MENTORSHIP & LEADERSHIP PROGRAMS
+      doc.addPage();
+      drawPageFramework(doc, 10, "MENTORSHIP & LEADERSHIP HUBS");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("MENTORSHIP & LEADERSHIP ACADEMIC HUBS", 12, 48);
+
+      tableY = 70;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Hub Location", 15, tableY + 7);
+      doc.text("Country", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const mentorHubs = [
+        { locate: "Gandaki District Hub", country: "Nepal", budget: "$850,000,000" },
+        { locate: "Manila Metro Hub", country: "Philippines", budget: "$900,000,000" },
+        { locate: "Bucharest Regional Hub", country: "Romania", budget: "$875,000,000" },
+        { locate: "Almaty Education Center", country: "Kazakhstan", budget: "$925,000,000" },
+        { locate: "Phoenix Inter-Community Base", country: "United States", budget: "$950,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      mentorHubs.forEach((hub) => {
+        doc.text(hub.locate, 15, tableY + 7);
+        doc.text(hub.country, 100, tableY + 7);
+        doc.text(hub.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Mentorship Hubs Total:", 15, tableY + 10);
+      doc.text("$4,500,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 11: FOOD BANK NETWORK
+      doc.addPage();
+      drawPageFramework(doc, 11, "GLOBAL FOOD BANK NETWORKS");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("GLOBAL FOOD BANK LOGISTICS NETWORKS", 12, 48);
+
+      tableY = 70;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Network Cluster", 15, tableY + 7);
+      doc.text("Activity Range", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const foodBanks = [
+        { net: "Asia Rural Food Bank Network", range: "Logistics base, refrigeration, trucks", budget: "$1,750,000,000" },
+        { net: "Europe Rural Food Bank Network", range: "Silo purchase, grain storage capacity", budget: "$1,650,000,000" },
+        { net: "North America Food Bank Network", range: "Local pantry dispatch networks", budget: "$1,600,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      foodBanks.forEach((fb) => {
+        doc.text(fb.net, 15, tableY + 7);
+        doc.text(fb.range, 100, tableY + 7);
+        doc.text(fb.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Food Bank Support Total:", 15, tableY + 10);
+      doc.text("$5,000,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 12: EMERGENCY HUNGER RELIEF
+      doc.addPage();
+      drawPageFramework(doc, 12, "EMERGENCY HUNGER RELIEF");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("EMERGENCY HUNGER RELIEF OPERATIONS", 12, 48);
+
+      tableY = 70;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Operations Zone", 15, tableY + 7);
+      doc.text("Primary Dispatch Tactics", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const hungerRelief = [
+        { zone: "Kabul, Afghanistan Base", tactic: "Hot meal kitchens, pediatric nutrition kits", budget: "$1,750,000,000" },
+        { zone: "Kharkiv, Ukraine Base", tactic: "Mobile warming hubs, immediate dry rations", budget: "$1,750,000,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      hungerRelief.forEach((hr) => {
+        doc.text(hr.zone, 15, tableY + 7);
+        doc.text(hr.tactic, 100, tableY + 7);
+        doc.text(hr.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Emergency Triage Relief Total:", 15, tableY + 10);
+      doc.text("$3,500,000,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 13: RURAL INFRASTRUCTURE RESERVE
+      doc.addPage();
+      drawPageFramework(doc, 13, "INFRASTRUCTURE & OPERATIONAL RESERVES");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("RURAL INFRASTRUCTURE & DISASTER RESERVES", 12, 48);
+
+      tableY = 70;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Sector Asset Cluster", 15, tableY + 7);
+      doc.text("Tactical Scope Outline", 100, tableY + 7);
+      doc.text("Budget USD", 195, tableY + 7, { align: "right" });
+
+      const infraReserves = [
+        { item: "Roads & Access Infrastructure", scope: "Connecting deep interior rural sectors", budget: "$3,500,000,000" },
+        { item: "Water & Sanitation Projects", scope: "Artesian supply borewells, treatment units", budget: "$2,000,000,000" },
+        { item: "Power & Renewable Smart Grids", scope: "Sovereign solar microgrid deployment", budget: "$1,250,000,000" },
+        { item: "Logistics & Transport Fleet", scope: "AWD emergency transport vehicles & ships", budget: "$1,000,000,000" },
+        { item: "Program Management & Oversight", scope: "Field engineering oversight, EY monitoring", budget: "$805,211,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      infraReserves.forEach((infra) => {
+        doc.text(infra.item, 15, tableY + 7);
+        doc.text(infra.scope, 100, tableY + 7);
+        doc.text(infra.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 12, 198, tableY + 12);
+        tableY += 12;
+      });
+
+      doc.setFillColor(255, 247, 237);
+      doc.rect(12, tableY + 2, 186, 12, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Sovereign Reserve Total:", 15, tableY + 10);
+      doc.text("$8,555,211,000", 195, tableY + 10, { align: "right" });
+
+      // PAGE 14: CONSOLIDATED SUMMARY & AUTHORIZATION SIGNATURES
+      doc.addPage();
+      drawPageFramework(doc, 14, "CONSOLIDATED MASTER APPROVAL");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(15, 23, 42);
+      doc.text("FINAL CONSOLIDATED SUMMARY & SANCTION", 12, 48);
+
+      tableY = 64;
+      doc.setFillColor(248, 250, 252);
+      doc.rect(12, tableY, 186, 10, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("Chapter Development Program Category", 15, tableY + 7);
+      doc.text("Sub-Chapters Active", 100, tableY + 7);
+      doc.text("Consolidated Allocation (USD)", 195, tableY + 7, { align: "right" });
+
+      const finalChapters = [
+        { name: "01. School Renovation Program (Global)", info: "33 Educational Academic Academies", budget: "$24,650,000,000" },
+        { name: "02. Hospital Facility Infrastructure (Global)", info: "28 Critical Hospital Formations", budget: "$19,320,000,000" },
+        { name: "03. Homes for the Homeless Construction", info: "50 Rural Community Hub Villages", budget: "$6,250,000,000" },
+        { name: "04. Homeless Community Shelters Program", info: "50 Complex Living Triage Centers", budget: "$6,250,000,000" },
+        { name: "05. Mentorship & High Leadership Hubs", info: "5 Integrated Training Academies", budget: "$4,500,000,000" },
+        { name: "06. Food Bank and Logistics Deployment", info: "3 Multi-National Depot Bases", budget: "$5,000,000,000" },
+        { name: "07. Emergency Hunger Relief Logistics Base", info: "Kabul and Kharkiv Active Divisions", budget: "$3,500,000,000" },
+        { name: "08. Rural Infrastructure Operations Reserves", info: "Roads, Clean Water, Energy Reserve", budget: "$8,555,211,000" }
+      ];
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(51, 65, 85);
+      tableY += 10;
+      finalChapters.forEach((chap) => {
+        doc.text(chap.name, 15, tableY + 7);
+        doc.text(chap.info, 100, tableY + 7);
+        doc.text(chap.budget, 195, tableY + 7, { align: "right" });
+        doc.setDrawColor(241, 245, 249);
+        doc.line(12, tableY + 11, 198, tableY + 11);
+        tableY += 11;
+      });
+
+      // Target Grand Total box
+      doc.setFillColor(254, 242, 242);
+      doc.rect(12, tableY + 3, 186, 14, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(220, 38, 38);
+      doc.text("GRAND CONSOLIDATED DEVELOPMENT ALLOCATION:", 15, tableY + 12);
+      doc.text("$68,025,211,000", 195, tableY + 12, { align: "right" });
+
+      // Signatures Box
+      doc.setDrawColor(226, 232, 240);
+      doc.setFillColor(255, 255, 255);
+      doc.rect(12, tableY + 23, 186, 38, "S");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(71, 85, 105);
+      doc.text("CERTIFICATION OF SOVEREIGN RATIFICATION & AUDIT SANCTION CERTIFICATION", 16, tableY + 29);
+
+      // Signature 1
+      doc.setFont("courier", "italic");
+      doc.setFontSize(9);
+      doc.setTextColor(30, 41, 59);
+      doc.text("H.H Sheikh Fazza Al Maktoum", 20, tableY + 41);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(148, 163, 184);
+      doc.text("________________________________________", 16, tableY + 45);
+      doc.text("His Highness Sheikh Hamdan Bin Al Maktoum \nSovereign Sponsor and Chairman", 16, tableY + 49);
+
+      // Signature 2
+      doc.setFont("courier", "italic");
+      doc.setFontSize(9);
+      doc.setTextColor(30, 41, 59);
+      doc.text("Williams H. Harison", 125, tableY + 41);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(148, 163, 184);
+      doc.text("________________________________________", 120, tableY + 45);
+      doc.text("Williams H. Harison\nGlobal Lead Audit Director (EY)", 120, tableY + 49);
+
+      // Save document
+      doc.save("Fazza_Charity_Humanitarian_Budget_2026.pdf");
+    } catch (e) {
+      console.error("PDF download failure:", e);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   const handleDonateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -3964,7 +4754,7 @@ ${finalLine}`;
                 {/* LEFT SIDE: EMOTIONAL & HUMANITARIAN PRESENTATION (CINEMATIC IMAGE BACKGROUND) */}
                 <div 
                   className="lg:col-span-6 relative bg-cover bg-center p-12 lg:p-16 flex flex-col justify-between min-h-[450px] lg:min-h-auto"
-                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1603833665858-e61d17a86224?q=80&w=1200')" }}
+                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200')" }}
                 >
                   {/* High contrast luxury overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/85 to-slate-950/70 z-0"></div>
@@ -4011,7 +4801,7 @@ ${finalLine}`;
                 </div>
 
                 {/* RIGHT SIDE: PREMIUM DONATION TYPE SELECTOR & PRESETS */}
-                <div className="lg:col-span-6 p-10 lg:p-14 bg-[#FAFAFA] flex flex-col justify-between">
+                <div id="donation-amount-selection" className="scroll-mt-24 lg:col-span-6 p-10 lg:p-14 bg-[#FAFAFA] flex flex-col justify-between">
                   <div className="space-y-8">
                     
                     {/* Header of Type selection */}
@@ -4701,10 +5491,98 @@ ${finalLine}`;
        activePage !== "hiv-support" && activePage !== "halfway-house" && activePage !== "vulnerable-foreigners" && activePage !== "seminar-request" && activePage !== "health-ambassadors" && activePage !== "children-home" && activePage !== "shelter-placement" && activePage !== "medical-care" && activePage !== "mother-child" && activePage !== "visit-care" && activePage !== "careers" && activePage !== "contact" && activePage !== "faq" && (
         <div className="max-w-4xl mx-auto px-4 py-24 space-y-10 font-sans">
           <div className="text-center space-y-3">
-            <span className="text-[#F4511E] bg-[#F4511E]/10 border border-[#F4511E]/20 text-[9px] px-3.5 py-1.5 uppercase font-mono rounded-full font-black">FAZZA VERIFIED SYSTEM PATH</span>
-            <h1 className="text-4xl font-extrabold text-[#111111] uppercase tracking-tight">{activePage.replace("-", " ")}</h1>
-            <p className="text-slate-500 text-xs font-semibold">Official documentation, application parameters, and active field statistics.</p>
+            {activePage !== "2026-budget-gallery" && activePage !== "gallery" && (
+              <span className="text-[#F4511E] bg-[#F4511E]/10 border border-[#F4511E]/20 text-[9px] px-3.5 py-1.5 uppercase font-mono rounded-full font-black">FAZZA VERIFIED SYSTEM PATH</span>
+            )}
+            <h1 className="text-4xl font-extrabold text-[#111111] uppercase tracking-tight">
+              {activePage === "gallery" ? "Infrastructure Gallery" : activePage.replace("-", " ")}
+            </h1>
+            <p className="text-slate-500 text-xs font-semibold">
+              {activePage === "gallery" 
+                ? "Prince Fazza Charity Foundation propose infrastructures, parameters, and active field statistics." 
+                : "Official documentation, application parameters, and active field statistics."}
+            </p>
           </div>
+
+          {/* 2026 BUDGET GALLERY DOCUMENTATION SECTION */}
+          {activePage === "2026-budget-gallery" && (
+            <div className="space-y-6 flex flex-col items-center">
+              <div className="bg-white border border-[#EAEAEA] rounded-3xl p-5 md:p-6 shadow-xl w-full max-w-xl">
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div 
+                    className="relative group overflow-hidden rounded-2xl border border-[#F1F5F9] transition hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-slate-50 aspect-[800/1100] flex items-center justify-center p-2"
+                    onClick={() => {
+                      setActiveBudgetImg("https://i.imgur.com/36a0EJh.png");
+                      setBudgetZoom(1);
+                      setBudgetPan({ x: 0, y: 0 });
+                    }}
+                  >
+                    <img 
+                      src="https://i.imgur.com/36a0EJh.png" 
+                      alt="Budget Page 1" 
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      className="max-h-full max-w-full object-contain select-none transition group-hover:scale-[1.01]" 
+                    />
+                    <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                      <span className="bg-white/95 text-[10px] uppercase font-bold text-slate-800 tracking-wider px-3 py-1.5 rounded-full shadow-md backdrop-blur-sm border border-slate-100">
+                        Zoom Page 1
+                      </span>
+                    </div>
+                  </div>
+
+                  <div 
+                    className="relative group overflow-hidden rounded-2xl border border-[#F1F5F9] transition hover:shadow-md hover:-translate-y-0.5 cursor-pointer bg-slate-50 aspect-[800/1100] flex items-center justify-center p-2"
+                    onClick={() => {
+                      setActiveBudgetImg("https://i.imgur.com/FW645co.png");
+                      setBudgetZoom(1);
+                      setBudgetPan({ x: 0, y: 0 });
+                    }}
+                  >
+                    <img 
+                      src="https://i.imgur.com/FW645co.png" 
+                      alt="Budget Page 2" 
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      className="max-h-full max-w-full object-contain select-none transition group-hover:scale-[1.01]" 
+                    />
+                    <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                      <span className="bg-white/95 text-[10px] uppercase font-bold text-slate-800 tracking-wider px-3 py-1.5 rounded-full shadow-md backdrop-blur-sm border border-slate-100">
+                        Zoom Page 2
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Download Budget and Live Portal Buttons Side-By-Side */}
+              <div className="flex flex-row gap-3 justify-center items-center w-full max-w-full px-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadBudget}
+                  disabled={isDownloadingPdf}
+                  className="bg-[#F4511E] hover:bg-[#F3450F] text-white font-extrabold text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest px-4 sm:px-8 py-3.5 rounded-full shadow-md transition-all duration-300 transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 flex-1 sm:flex-initial"
+                >
+                  <Download className="w-4 h-4 text-white shrink-0" />
+                  <span className="truncate">{isDownloadingPdf ? "Compiling..." : "Download Budget"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("live-donation-feed-portal");
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+                  }}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest px-4 sm:px-8 py-3.5 rounded-full shadow-md transition-all duration-300 transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer flex-1 sm:flex-initial"
+                >
+                  <Activity className="w-4 h-4 text-[#F4511E] shrink-0 animate-pulse" />
+                  <span className="truncate">Live Portal</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* DYNAMIC FORMS ACCORDING TO PAGES REQUESTS */}
           {activePage === "volunteer" && (
@@ -4957,27 +5835,51 @@ ${finalLine}`;
 
           {activePage === "gallery" && (
             <div className="space-y-6 font-sans">
-              <div className="flex justify-center space-x-3 text-xs mb-6">
-                {["All", "Education", "Medical", "Water Projects", "Empowerment"].map(cat => (
-                  <button 
-                    key={cat} 
-                    onClick={() => setGalleryCategory(cat)}
-                    className={`px-4 py-1.5 rounded-full border transition cursor-pointer font-bold duration-300 ${galleryCategory === cat ? "bg-[#F4511E] text-white border-[#F4511E]" : "bg-white border-[#EAEAEA] text-slate-600 hover:border-[#F4511E]"}`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+              <div className="space-y-10 font-sans text-left">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-fade-in">
+                  {generateGalleryItems().map((item, idx) => (
+                    <div 
+                      key={item.id}
+                      className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-orange-500/20 group transition-all duration-300 flex flex-col"
+                    >
+                      {/* Image area displaying ONLY: Gallery Loading */}
+                      <div className="relative aspect-video w-full overflow-hidden bg-slate-950 flex items-center justify-center border-b border-slate-100">
+                        <span className="font-sans text-xs font-semibold uppercase tracking-widest text-slate-400 select-none animate-pulse">
+                          Gallery Loading
+                        </span>
+                      </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {galleryItems.filter(item => galleryCategory === "All" || item.cat === galleryCategory).map((item, i) => (
-                  <div key={i} className="relative group cursor-pointer overflow-hidden rounded-2xl border border-[#EAEAEA]" onClick={() => setSelectedGalleryImg(item.img)}>
-                    <img src={item.img} alt={item.title} className="w-full h-40 object-cover group-hover:scale-105 transition duration-500" />
-                    <div className="absolute inset-0 bg-[#111111]/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                      <Search className="w-6 h-6 text-white" />
+                      {/* Card Details */}
+                      <div className="p-4 flex-grow flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-1.5 text-orange-600">
+                            <MapPin className="w-3.5 h-3.5 shrink-0" />
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider">{item.region}</span>
+                          </div>
+
+                          <h3 className="font-sans font-black text-slate-950 text-sm tracking-tight leading-snug group-hover:text-[#F4511E] transition-colors">
+                            {item.title}
+                          </h3>
+
+                          <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-3">
+                            {item.description}
+                          </p>
+                        </div>
+
+                        <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                          <div>
+                            <span className="text-[9px] uppercase font-mono text-slate-400 block tracking-wider">Required Allocation</span>
+                            <span className="text-xs font-black text-slate-950 font-mono">{item.budget} USD</span>
+                          </div>
+
+                          <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono font-bold uppercase">
+                            Direct Flow
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -5090,12 +5992,42 @@ ${finalLine}`;
           )}
 
           {/* DEFAULT INNER PAGES GENERATOR FOR THE REMAINING 35 PAGES */}
-          {activePage !== "faq" && !isDonationFocusMode && (
-            <div className="bg-[#FAFAFA] border border-[#EAEAEA] p-6 rounded-3xl text-xs space-y-2 text-slate-500 font-sans">
+          {activePage !== "faq" && activePage !== "gallery" && !isDonationFocusMode && (
+            <div className={`bg-[#FAFAFA] border p-6 rounded-3xl text-xs space-y-3 text-slate-500 font-sans ${activePage === "2026-budget-gallery" ? "border-[#F4511E]" : "border-[#EAEAEA]"}`}>
               <p className="font-extrabold text-[#111111] uppercase font-sans tracking-wider text-[10px]">Fazza Compliance Statement</p>
-              <p className="font-medium leading-relaxed">
-                All active areas are verified and compiled under the supervision of H.H Prince Fazza Charity Foundation. Continuous logistics, educational scholarships, agricultural microgrants, and trauma shelters are arranged in strict alignment with United Nations Sustainable Development Guidelines target matrices. For immediate emergency triage support, coordinate with our logistics base via the contact parameters.
-              </p>
+              {activePage === "2026-budget-gallery" ? (
+                <div className="space-y-3">
+                  <p className="font-medium leading-relaxed text-slate-600">
+                    The H.H. Prince Fazza Charity Foundation oversees and monitors all active programs to ensure accountability and effective implementation. Our work includes logistics assistance, educational scholarships, agricultural microgrants, and trauma support shelters, with initiatives guided by the objectives of the United Nations Sustainable Development Goals.
+                  </p>
+                  <p className="font-medium leading-relaxed text-slate-600">
+                    Individuals or organizations requiring urgent assistance should contact our logistics coordination team through the designated contact channels.
+                  </p>
+                  <div className="pt-3 border-t border-slate-200/60 space-y-2 text-[11px]">
+                    <div>
+                      <span className="font-bold text-[#111111] block mb-0.5">Email:</span>
+                      <a href="mailto:theroyalpalace6@gmail.com" className="text-[#F4511E] hover:underline font-bold font-mono">
+                        theroyalpalace6@gmail.com
+                      </a>
+                    </div>
+                    <div>
+                      <span className="font-bold text-[#111111] block mb-0.5">WhatsApp Emergency Coordination:</span>
+                      <a 
+                        href={`https://wa.me/12272664466?text=${encodeURIComponent("Hello Prince Fazza Charity Foundation.\n\nI am contacting the logistics coordination team regarding an urgent humanitarian assistance inquiry.\n\nPlease provide guidance on the appropriate support process and next steps.\n\nThank you.")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#F4511E] hover:underline font-bold font-mono inline-block"
+                      >
+                        +1 (227) 266-4466
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <p className="font-medium leading-relaxed">
+                  All active areas are verified and compiled under the supervision of H.H Prince Fazza Charity Foundation. Continuous logistics, educational scholarships, agricultural microgrants, and trauma shelters are arranged in strict alignment with United Nations Sustainable Development Guidelines target matrices. For immediate emergency triage support, coordinate with our logistics base via the contact parameters.
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -5112,6 +6044,14 @@ ${finalLine}`;
             setActivePage={handlePageChange}
           />
         </div>
+      )}
+
+      {/* 8. 2026 HUMANITARIAN BUDGET GALLERY PAGE */}
+      {activePage === "2026-budget-gallery" && (
+        <BudgetGallery2026 
+          onNavigate={handlePageChange} 
+          lang={lang} 
+        />
       )}
         </motion.div>
       </AnimatePresence>
@@ -5396,6 +6336,120 @@ ${finalLine}`;
         )}
       </AnimatePresence>
 
+      {/* 2026 BUDGET GALLERY LIGHTBOX VIEWER OVERLAY */}
+      <AnimatePresence>
+        {activeBudgetImg && (
+          <div className="fixed inset-0 z-[999999] bg-[#090D16]/95 backdrop-blur-md flex flex-col items-center justify-center select-none overflow-hidden touch-none font-sans">
+            {/* Topbar Info & Controls */}
+            <div className="absolute top-4 left-4 right-4 z-[1000000] flex flex-col sm:flex-row justify-between items-center bg-[#0F172A]/85 backdrop-blur border border-[#1E293B]/60 p-3 px-5 rounded-3xl gap-2 shadow-2xl">
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-300 tracking-wider">
+                {activeBudgetImg.includes("page1") || activeBudgetImg.includes("36a0EJh") ? "Page 1: Sovereign Campaign Scope" : "Page 2: School Renovations Program (Asia)"}
+              </span>
+              
+              <div className="flex items-center space-x-2">
+                <button 
+                  type="button"
+                  onClick={() => setBudgetZoom(prev => Math.min(prev * 1.5, 8))}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-[#F4511E] transition duration-200 cursor-pointer text-white flex items-center justify-center shadow-lg"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-4 h-4 text-white" />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setBudgetZoom(prev => Math.max(prev / 1.5, 0.5))}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-[#F4511E] transition duration-200 cursor-pointer text-white flex items-center justify-center shadow-lg"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-4 h-4 text-white" />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => { setBudgetZoom(1); setBudgetPan({ x: 0, y: 0 }); }}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-[#F4511E] transition duration-200 cursor-pointer text-white flex items-center justify-center shadow-lg"
+                  title="Reset Alignment"
+                >
+                  <RotateCcw className="w-4 h-4 text-white" />
+                </button>
+                <span className="w-[1px] h-6 bg-slate-700/60 mx-1"></span>
+                <button 
+                  type="button"
+                  onClick={() => setActiveBudgetImg(null)}
+                  className="p-2 rounded-xl bg-red-600/90 hover:bg-red-500 transition duration-200 cursor-pointer text-white flex items-center justify-center shadow-lg ml-1"
+                  title="Close Preview"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Gesture-enabled drag and pan area */}
+            <div 
+              className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing overflow-hidden"
+              onMouseDown={(e) => {
+                if (e.button === 0) {
+                  setIsBudgetDragging(true);
+                  setBudgetPanStart({ x: e.clientX - budgetPan.x, y: e.clientY - budgetPan.y });
+                }
+              }}
+              onMouseMove={(e) => {
+                if (!isBudgetDragging) return;
+                setBudgetPan({
+                  x: e.clientX - budgetPanStart.x,
+                  y: e.clientY - budgetPanStart.y
+                });
+              }}
+              onMouseUp={() => setIsBudgetDragging(false)}
+              onMouseLeave={() => setIsBudgetDragging(false)}
+              onTouchStart={(e) => {
+                if (e.touches.length === 1) {
+                  setIsBudgetDragging(true);
+                  setBudgetPanStart({ 
+                    x: e.touches[0].clientX - budgetPan.x, 
+                    y: e.touches[0].clientY - budgetPan.y 
+                  });
+                }
+              }}
+              onTouchMove={(e) => {
+                if (isBudgetDragging && e.touches.length === 1) {
+                  setBudgetPan({
+                    x: e.touches[0].clientX - budgetPanStart.x,
+                    y: e.touches[0].clientY - budgetPanStart.y
+                  });
+                }
+              }}
+              onTouchEnd={() => setIsBudgetDragging(false)}
+              onWheel={(e) => {
+                // Zoom on wheel scroll
+                const zoomFactor = e.deltaY < 0 ? 1.25 : 0.8;
+                setBudgetZoom(prev => Math.max(0.5, Math.min(prev * zoomFactor, 8)));
+              }}
+            >
+              <motion.div 
+                style={{
+                  transform: `translate(${budgetPan.x}px, ${budgetPan.y}px) scale(${budgetZoom})`,
+                  transformOrigin: "center center",
+                  transition: isBudgetDragging ? "none" : "transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                }}
+                className="w-full max-w-lg md:max-w-2xl max-h-[75vh] p-4 flex items-center justify-center pointer-events-none"
+              >
+                <img 
+                  src={activeBudgetImg} 
+                  alt="Zoomed Budget Detail View" 
+                  referrerPolicy="no-referrer"
+                  className="max-w-full max-h-[75vh] object-contain pointer-events-auto rounded-xl shadow-2xl border border-slate-700/30"
+                />
+              </motion.div>
+            </div>
+
+            {/* Bottom Help Tips */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000000] text-[9px] text-slate-400 bg-[#0F172A]/80 backdrop-blur border border-[#1E293B]/40 px-5 py-2.5 rounded-full font-mono font-medium tracking-wider text-center max-w-[90%] sm:max-w-auto leading-relaxed shadow-lg">
+              DRAG / MOVE TO PAN • SCROLL WHEEL / GESTURES OR TOP BUTTONS TO ZOOM
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* GLOBAL ULTRA PREMIUM PAYMENT METHOD SELECTOR MODAL OVERLAY */}
       <AnimatePresence>
         {showPaymentPopup && (
@@ -5469,6 +6523,147 @@ ${finalLine}`;
                 <Lock className="w-3 h-3 text-emerald-500" />
                 <span>Secure Direct Allocation Routing</span>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 2026 COOKIE CONSENT SYSTEM */}
+      <AnimatePresence>
+        {showCookieBanner && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="fixed bottom-0 left-0 right-0 z-[100000] p-4 sm:p-6 bg-slate-900/95 backdrop-blur-md border-t border-white/10 text-white font-sans shadow-2xl"
+          >
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-orange-500/10 text-[#F4511E] rounded-xl border border-[#F4511E]/20 mt-1 shrink-0">
+                  <Globe className="w-5 h-5 shrink-0" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-black uppercase tracking-wider text-white">
+                    Direct Liaison Console Cookies &amp; Privacy Preference
+                  </h4>
+                  <p className="text-xs text-slate-300 leading-relaxed max-w-4xl">
+                    Our platform uses secure, lightweight cookies to track localized logistics pipelines, remember volunteer registrations, and measure zero-dilution donor campaign metrics. Agree to our sovereign privacy guidelines to access full operational coordinates.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem("pf_cookie_consent", "accepted");
+                    setShowCookieBanner(false);
+                    setShowBudgetPopup(true);
+                  }}
+                  className="w-full sm:w-auto bg-[#F4511E] hover:bg-[#ff693b] text-white px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer text-center"
+                >
+                  Accept All Cookies
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCookieBanner(false);
+                    setShowBudgetPopup(true);
+                  }}
+                  className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 border border-white/5 cursor-pointer text-center"
+                >
+                  Reject Cookies
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 2026 BUDGET SUPPORT POP-UP MODAL */}
+      <AnimatePresence>
+        {showBudgetPopup && (
+          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[100001] flex items-center justify-center p-4 font-sans select-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.93, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.93, y: 30 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-sm bg-white rounded-[28px] border border-slate-100/80 shadow-[0_32px_96px_rgba(0,0,0,0.3)] p-5 sm:p-6 text-center space-y-4 mx-auto overflow-hidden"
+            >
+              {/* Backglow element subtle layout helper */}
+              <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-orange-500/5 to-transparent rounded-t-[28px] pointer-events-none" />
+
+              {/* Close icon */}
+              <button
+                type="button"
+                onClick={() => setShowBudgetPopup(false)}
+                className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition duration-200 cursor-pointer z-30"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Foundation Logo Asset positioned top center completely inside the card container */}
+              <div className="flex items-center justify-center pt-2">
+                <img
+                  src="https://i.imgur.com/eNBSRt4.png"
+                  alt="Prince Fazza Charity Foundation Official Logo"
+                  referrerPolicy="no-referrer"
+                  className="h-28 sm:h-32 w-auto object-contain transition-transform hover:scale-105 duration-300"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              </div>
+
+              {/* Heading Titles */}
+              <div className="space-y-1.5">
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-snug">
+                  Support Our 2026 Humanitarian Development Budget
+                </h3>
+                <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed">
+                  Help us expand humanitarian impact through school renovations, hospital rehabilitation, homelessness support, hunger relief, food bank development, mentorship initiatives, and rural infrastructure assistance.
+                </p>
+              </div>
+
+              {/* Luxury/VIP CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePageChange("donate");
+                    setDonationStep(1);
+                    setShowBudgetPopup(false);
+                    // Automatic scrolling & input focus target
+                    setTimeout(() => {
+                      const element = document.getElementById("donation-amount-selection");
+                      if (element) {
+                        element.scrollIntoView({ behavior: "smooth", block: "center" });
+                        // Focus on first input if present
+                        const input = element.querySelector("input");
+                        if (input) {
+                          input.focus({ preventScroll: true });
+                        }
+                      }
+                    }, 400);
+                  }}
+                  className="w-full bg-[#111111] hover:bg-[#F4511E] text-white py-2.5 px-4 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-md hover:-translate-y-0.5 active:scale-95 cursor-pointer text-center"
+                >
+                  Donate Now
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePageChange("2026-budget-gallery");
+                    setShowBudgetPopup(false);
+                  }}
+                  className="w-full bg-transparent hover:bg-slate-50 text-slate-600 border border-slate-200 py-2.5 px-4 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer text-center"
+                >
+                  See Budget
+                </button>
+              </div>
+
             </motion.div>
           </div>
         )}

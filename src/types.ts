@@ -49,7 +49,8 @@ export type ActivePage =
   | "sustainability"
   | "water-projects"
   | "privacy"
-  | "terms";
+  | "terms"
+  | "2026-budget-gallery";
 
 export interface Program {
   id: string;

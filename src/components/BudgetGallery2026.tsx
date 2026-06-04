@@ -948,24 +948,17 @@ export const BudgetGallery2026: React.FC<BudgetGallery2026Props> = ({ onNavigate
       </div>
 
       {/* 5. FUNDING GOAL SUMMARY SECTION */}
-      <div className="max-w-7xl mx-auto px-6 mt-16 sm:mt-24">
-        <div className="bg-white border border-slate-200/80 rounded-[32px] p-8 md:p-12 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 mt-16 sm:mt-24">
+        <div className="bg-white border-y sm:border border-slate-200/80 rounded-none sm:rounded-[32px] p-4 sm:p-8 md:p-12 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           
-          <div className="lg:col-span-4 space-y-4">
-            <span className="text-[#F4511E] font-mono text-xs uppercase tracking-widest font-black block">Allocation Blueprint</span>
-            <h3 className="text-2xl font-black text-slate-950 uppercase tracking-tight">Funding Goal Summary</h3>
+          <div className="lg:col-span-4 space-y-4 px-4 sm:px-0">
+            <h3 className="text-2xl font-black text-slate-950 uppercase tracking-tight">Live Donation Portal</h3>
             <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
               Every coordinate program listed in our Humanitarian Gallery requires verified funding support to initiate actual on-site drilling, construction, or clinic renovation operations.
             </p>
-            <div className="p-4 bg-orange-50 rounded-2xl border border-orange-500/10 flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-[#F4511E] shrink-0 mt-0.5" />
-              <p className="text-[11px] text-orange-950 font-medium leading-relaxed">
-                To guarantee absolute transparency, our live audits track exact resource shipments directly to project coordinates visible on this page.
-              </p>
-            </div>
           </div>
 
-          <div id="live-donation-feed-portal" className="lg:col-span-8 bg-white border border-slate-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] text-slate-900 rounded-[28px] p-6 sm:p-8 space-y-6">
+          <div id="live-donation-feed-portal" className="lg:col-span-8 bg-white border-y sm:border border-slate-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] text-slate-900 rounded-none sm:rounded-[28px] -mx-4 sm:mx-0 p-4 sm:p-8 space-y-6">
             
             {/* LIVE DONATION ACTIVITY */}
             <div className="space-y-3 bg-slate-50 border border-slate-200/60 rounded-2xl p-4">

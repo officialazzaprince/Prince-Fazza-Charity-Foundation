@@ -5580,8 +5580,20 @@ ${finalLine}`;
                   <span className="truncate">{isDownloadingPdf ? "Compiling..." : "Download Budget"}</span>
                 </button>
 
-                <button
+                <motion.button
                   type="button"
+                  animate={{
+                    boxShadow: [
+                      "0 0 0 rgba(16, 185, 129, 0)",
+                      "0 0 16px rgba(16, 185, 129, 0.4)",
+                      "0 0 0 rgba(16, 185, 129, 0)"
+                    ]
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 2.5,
+                    ease: "easeInOut"
+                  }}
                   onClick={() => {
                     const isMobile = window.innerWidth < 640;
                     const targetId = isMobile ? "live-donation-activity-card" : "live-donation-feed-portal";
@@ -5590,11 +5602,15 @@ ${finalLine}`;
                       el.scrollIntoView({ behavior: "smooth", block: "center" });
                     }
                   }}
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest px-4 sm:px-8 py-3.5 rounded-full shadow-md transition-all duration-300 transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer flex-1 sm:flex-initial"
+                  className="bg-emerald-400 hover:bg-emerald-500 text-slate-950 font-extrabold text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest px-4 sm:px-8 py-3.5 rounded-full shadow-md transition-all duration-300 transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer flex-1 sm:flex-initial"
                 >
-                  <Activity className="w-4 h-4 text-[#F4511E] shrink-0 animate-pulse" />
-                  <span className="truncate">Live Portal</span>
-                </button>
+                  <Activity className="w-4 h-4 text-slate-950 shrink-0 animate-pulse" />
+                  <span className="truncate">See Live Portal</span>
+                  <span className="flex h-1.5 w-1.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75 animate-duration-1000"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-slate-950"></span>
+                  </span>
+                </motion.button>
               </div>
             </div>
           )}
@@ -6547,22 +6563,22 @@ ${finalLine}`;
       <AnimatePresence>
         {showCookieBanner && (
           <motion.div 
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="fixed bottom-0 left-0 right-0 z-[100000] p-4 sm:p-6 bg-slate-900/95 backdrop-blur-md border-t border-white/10 text-white font-sans shadow-2xl"
+            initial={{ opacity: 0, y: 60, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 40, scale: 0.98 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 md:left-1/2 md:-translate-x-1/2 md:max-w-6xl md:w-[calc(100%-3rem)] z-[100000] p-5 sm:p-6 bg-slate-950/75 backdrop-blur-xl border border-white/10 text-white font-sans rounded-3xl shadow-[0_24px_60px_rgba(0,0,0,0.5)]"
           >
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 w-full">
               <div className="flex items-start gap-4">
-                <div className="p-2 bg-orange-500/10 text-[#F4511E] rounded-xl border border-[#F4511E]/20 mt-1 shrink-0">
+                <div className="p-2.5 bg-orange-500/10 text-[#F4511E] rounded-xl border border-[#F4511E]/20 mt-1 shrink-0">
                   <Globe className="w-5 h-5 shrink-0" />
                 </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-black uppercase tracking-wider text-white">
-                    Direct Liaison Console Cookies &amp; Privacy Preference
+                <div className="space-y-1 text-left">
+                  <h4 className="text-sm font-black uppercase tracking-widest text-[#F4511E]">
+                    COOKIES &amp; PRIVACY
                   </h4>
-                  <p className="text-xs text-slate-300 leading-relaxed max-w-4xl">
+                  <p className="text-xs text-slate-200 leading-relaxed max-w-4xl font-medium">
                     Our platform uses secure, lightweight cookies to track localized logistics pipelines, remember volunteer registrations, and measure zero-dilution donor campaign metrics. Agree to our sovereign privacy guidelines to access full operational coordinates.
                   </p>
                 </div>
@@ -6578,7 +6594,7 @@ ${finalLine}`;
                       setShowBudgetPopup(true);
                     }, 2000);
                   }}
-                  className="w-full sm:w-auto bg-[#F4511E] hover:bg-[#ff693b] text-white px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer text-center"
+                  className="w-full sm:w-auto bg-[#F4511E] hover:bg-[#ff693b] text-white px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer text-center shadow-md active:scale-95"
                 >
                   Accept All Cookies
                 </button>
@@ -6590,7 +6606,7 @@ ${finalLine}`;
                       setShowBudgetPopup(true);
                     }, 2000);
                   }}
-                  className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 border border-white/5 cursor-pointer text-center"
+                  className="w-full sm:w-auto bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-200 border border-white/5 cursor-pointer text-center active:scale-95 shadow-md"
                 >
                   Reject Cookies
                 </button>

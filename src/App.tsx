@@ -11,6 +11,7 @@ import { GlobalVoices } from "./components/GlobalVoices";
 import { GlobalVoicesAddCommentary } from "./components/GlobalVoicesAddCommentary";
 import { GlobalVoicesShowcase } from "./components/GlobalVoicesShowcase";
 import { BudgetGallery2026, generateGalleryItems, GalleryItem } from "./components/BudgetGallery2026";
+import { LiveDonationPortal } from "./components/LiveDonationPortal";
 import { PremiumDonateButton } from "./components/PremiumDonateButton";
 import { translate, translateParagraph, TOP_LANGUAGES } from "./translation";
 import childrenPlayingImg from "./assets/images/children_playing_field_1780309954729.png";
@@ -832,7 +833,7 @@ const OrgCTA: React.FC<{ onNavigate: (page: ActivePage) => void }> = ({ onNaviga
 
 const VALID_PAGES: Set<string> = new Set([
   "home", "about", "vision", "mission", "programs", "campaigns", "donate", "volunteer", "partner",
-  "stories", "blog", "newsroom", "global-voices", "global-voices/add-commentary", "events", "gallery",
+  "stories", "blog", "newsroom", "global-voices", "global-voices/add-commentary", "live-donation-portal", "events", "gallery",
   "videos", "testimonials", "commentary", "global-impact", "annual-reports", "financial-transparency",
   "leadership", "founder-chronicle", "board-directors", "org-structure", "careers", "internships", "faq",
   "contact", "hiv-support", "halfway-house", "vulnerable-foreigners", "seminar-request", "health-ambassadors",
@@ -5501,7 +5502,7 @@ ${finalLine}`;
 
       {/* 6. OTHER SUPPORTED PAGES GENERAL PRESET LAYOUT */}
       {activePage !== "home" && activePage !== "about" && activePage !== "mission" && activePage !== "leadership" && activePage !== "testimonials" && activePage !== "campaigns" && activePage !== "emergency-relief" && activePage !== "scholarships" && activePage !== "water-projects" && activePage !== "donate" && activePage !== "commentary" && 
-       activePage !== "hiv-support" && activePage !== "halfway-house" && activePage !== "vulnerable-foreigners" && activePage !== "seminar-request" && activePage !== "health-ambassadors" && activePage !== "children-home" && activePage !== "shelter-placement" && activePage !== "medical-care" && activePage !== "mother-child" && activePage !== "visit-care" && activePage !== "careers" && activePage !== "contact" && activePage !== "faq" && (
+       activePage !== "hiv-support" && activePage !== "halfway-house" && activePage !== "vulnerable-foreigners" && activePage !== "seminar-request" && activePage !== "health-ambassadors" && activePage !== "children-home" && activePage !== "shelter-placement" && activePage !== "medical-care" && activePage !== "mother-child" && activePage !== "visit-care" && activePage !== "careers" && activePage !== "contact" && activePage !== "faq" && activePage !== "live-donation-portal" && (
         <div className="max-w-4xl mx-auto px-4 py-24 space-y-10 font-sans">
           <div className="text-center space-y-3">
             {activePage !== "2026-budget-gallery" && activePage !== "gallery" && (
@@ -5595,12 +5596,7 @@ ${finalLine}`;
                     ease: "easeInOut"
                   }}
                   onClick={() => {
-                    const isMobile = window.innerWidth < 640;
-                    const targetId = isMobile ? "live-donation-activity-card" : "live-donation-feed-portal";
-                    const el = document.getElementById(targetId) || document.getElementById("live-donation-feed-portal");
-                    if (el) {
-                      el.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }
+                    handlePageChange("live-donation-portal");
                   }}
                   className="bg-emerald-400 hover:bg-emerald-500 text-slate-950 font-extrabold text-[10px] sm:text-xs uppercase tracking-wider sm:tracking-widest px-4 sm:px-8 py-3.5 rounded-full shadow-md transition-all duration-300 transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer flex-1 sm:flex-initial"
                 >
@@ -6080,6 +6076,14 @@ ${finalLine}`;
       {/* 8. 2026 HUMANITARIAN BUDGET GALLERY PAGE */}
       {activePage === "2026-budget-gallery" && (
         <BudgetGallery2026 
+          onNavigate={handlePageChange} 
+          lang={lang} 
+        />
+      )}
+
+      {/* 8.5. LIVE DONATION PORTAL PAGE */}
+      {activePage === "live-donation-portal" && (
+        <LiveDonationPortal 
           onNavigate={handlePageChange} 
           lang={lang} 
         />

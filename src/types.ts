@@ -13,6 +13,7 @@ export type ActivePage =
   | "newsroom"
   | "global-voices"
   | "global-voices/add-commentary"
+  | "live-donation-portal"
   | "events"
   | "gallery"
   | "videos"

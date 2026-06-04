@@ -313,7 +313,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   onClick={() => handleLinkClick("newsroom")}
                   className={`text-[11px] uppercase tracking-widest font-black px-3.5 py-2 rounded-full flex items-center space-x-1.5 transition-all outline-none ${
-                    activePage === "newsroom" || activePage === "global-voices"
+                    activePage === "newsroom" || activePage === "global-voices" || activePage === "live-donation-portal"
                       ? "text-[#F4511E] bg-[#F4511E]/5"
                       : "text-slate-800 hover:text-[#F4511E] hover:bg-slate-50"
                   }`}
@@ -324,7 +324,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 {/* News Dropdown Panel */}
                 {activeDropdown === "news" && (
-                  <div className="absolute left-1/2 -translate-x-1/2 mt-1 w-[460px] grid grid-cols-2 gap-3 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-2xl p-4 z-50 animate-fade-in">
+                  <div className="absolute left-1/2 -translate-x-1/2 mt-1 w-[680px] grid grid-cols-3 gap-3 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-2xl p-4 z-50 animate-fade-in">
                     <button 
                       onClick={() => handleLinkClick("newsroom")}
                       className="w-full text-left p-3 rounded-xl hover:bg-[#F4511E]/5 hover:text-[#F4511E] transition-all flex items-center justify-between group"
@@ -342,6 +342,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <div>
                         <span className="block text-xs font-black text-slate-900 group-hover:text-[#F4511E]">{translate("global_voices", lang)}</span>
                         <span className="block text-[10px] text-slate-400 font-medium">Messages of hope & impact</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#F4511E]" />
+                    </button>
+                    <button 
+                      onClick={() => handleLinkClick("live-donation-portal")}
+                      className="w-full text-left p-3 rounded-xl hover:bg-[#F4511E]/5 hover:text-[#F4511E] transition-all flex items-center justify-between group"
+                    >
+                      <div>
+                        <span className="block text-xs font-black text-slate-900 group-hover:text-[#F4511E]">{translate("live_donation_portal", lang)}</span>
+                        <span className="block text-[10px] text-slate-400 font-medium">Real-time commitment feed</span>
                       </div>
                       <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#F4511E]" />
                     </button>
@@ -689,6 +699,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                         className="w-full text-left py-2 text-xs font-extrabold text-slate-600 hover:text-[#F4511E] truncate block text-left"
                       >
                         • {translate("global_voices", lang)}
+                      </button>
+                      <button 
+                        onClick={() => handleLinkClick("live-donation-portal")}
+                        className="w-full text-left py-2 text-xs font-extrabold text-slate-600 hover:text-[#F4511E] truncate block text-left"
+                      >
+                        • {translate("live_donation_portal", lang)}
                       </button>
                     </div>
                   )}

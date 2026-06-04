@@ -961,8 +961,11 @@ export const BudgetGallery2026: React.FC<BudgetGallery2026Props> = ({ onNavigate
           <div id="live-donation-feed-portal" className="lg:col-span-8 bg-white border-y sm:border border-slate-200/80 shadow-[0_4px_30px_rgba(0,0,0,0.03)] text-slate-900 rounded-none sm:rounded-[28px] -mx-4 sm:mx-0 p-4 sm:p-8 space-y-6">
             
             {/* LIVE DONATION ACTIVITY */}
-            <div className="space-y-3 bg-slate-50 border border-slate-200/60 rounded-2xl p-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200/60 pb-2 gap-2">
+            <div className="relative space-y-3 bg-white border border-emerald-500/20 rounded-2xl p-4 shadow-[0_12px_32px_rgba(16,185,129,0.08)]">
+              {/* Constant Fading & Fade-out Pulsing Green Border Indicator */}
+              <div className="absolute inset-0 border-2 border-emerald-500 rounded-2xl pointer-events-none animate-pulse" />
+              
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200/60 pb-2 gap-2 relative z-10">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-xs uppercase font-mono tracking-wider font-bold text-slate-700">
@@ -980,7 +983,7 @@ export const BudgetGallery2026: React.FC<BudgetGallery2026Props> = ({ onNavigate
               </div>
 
               {/* Cards Container with fixed height for exactly 3 cards */}
-              <div className="space-y-2 overflow-hidden flex flex-col justify-end" style={{ height: "230px" }}>
+              <div className="space-y-2 overflow-hidden flex flex-col justify-end relative z-10" style={{ height: "230px" }}>
                 <AnimatePresence initial={false}>
                   {visibleDonations.map((d) => (
                     <motion.div
